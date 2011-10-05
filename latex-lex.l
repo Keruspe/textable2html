@@ -3,13 +3,40 @@ DIGIT [0-9]
 NUMBER {DIGIT}+\.?{DIGIT}*
 
 %{
+    /* gwenael.pluchon@gmail.com */
     #include "y.tab.h"
+    #include <string.h>
 %}
 
 %%
+\n ;
+
+\\\\ {
+    return(NewLine);
+}
+
+"&" {
+    return(NewCell);
+}
+
 {NUMBER} {
     yylval.fval = atof(yytext);
     return(Number);
 }
 
+[\n\t a-zA-Z0-9_-]+ {
+    yylval.sval = strdup(yytext);
+    return(String);
+}
 
+\\begin\{tabular\}\{[|crl]+\} {
+    yytext[yyleng-1] = '\0';
+    yylval.sval = strdup(yytext+16);
+    return(BeginTab);
+}
+
+\\end\{tabular\} {
+    return(EndTab);
+}
+
+. ;
