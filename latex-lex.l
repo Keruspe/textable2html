@@ -11,11 +11,11 @@ NUMBER {DIGIT}+\.?{DIGIT}*
 %%
 \n ;
 
-\\\\ {
+{BLANK}*\\\\{BLANK}* {
     return(NewLine);
 }
 
-"&" {
+{BLANK}*"&"{BLANK}* {
     return(NewCell);
 }
 
@@ -29,7 +29,7 @@ NUMBER {DIGIT}+\.?{DIGIT}*
     return(String);
 }
 
-\\begin\{tabular\}\{[|crl]+\} {
+\\begin\{tabular\}\{[|crl]+\}{BLANK}* {
     yytext[yyleng-1] = '\0';
     yylval.sval = strdup(yytext+16);
     return(BeginTab);

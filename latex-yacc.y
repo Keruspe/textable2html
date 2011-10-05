@@ -126,10 +126,10 @@ int main(int argc, char *argv[]) {
         fprintf (stderr, "usage: %s <file>\n", argv[0]);
         yyerror ("bad invocation");
     }
-    //yyin = fopen(argv[1], "r");
+    yyin = fopen(argv[1], "r");
     yyparse();
     yylex_destroy();
-    //fclose (yyin);
+    fclose (yyin);
     return 0;
 }
 
