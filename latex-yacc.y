@@ -1,4 +1,5 @@
 %{
+    #include <stdbool.h>
     #include <stdio.h>
     #include <stdlib.h>
 
@@ -7,6 +8,8 @@
     int yyparse ();
     extern int yylex (void);
     extern int yylex_destroy(void);
+
+    bool numbers_only = true;
 
     typedef enum {
         NUMBER,
@@ -42,6 +45,8 @@
     typedef struct Table {
         Format *format;
         Line *lines;
+        bool borders;
+        int nb_cell;
     } Table;
 
     void printFormat(Format *f) {
@@ -63,12 +68,13 @@
 
     void printTable(Table *t) {
         printFormat(t->format);
+        printf("%s borders\n", t->borders ? "With" : "Without");
         Line *l = t->lines;
         printf("<table>\n");
         while (l) {
             printf("    <tr>\n");
             Cell *cell = l->cells;
-            while (cell) {
+            for (int i = 0; cell && i < t->nb_cell; ++i) {
                 printf("        <td>");
                 switch (cell->kind) {
                 case NUMBER:
@@ -112,6 +118,16 @@
         Table *t = (Table *) malloc(sizeof(Table));
         t->format = format;
         t->lines = lines;
+        int nb_cell = 0, nb_sep = 0;
+        while (format) {
+            if (format->kind == SEP)
+                ++nb_sep;
+            else
+                ++nb_cell;
+            format = format->next;
+        }
+        t->borders = (nb_sep > nb_cell/2);
+        t->nb_cell = nb_cell;
         return t;
     }
 
@@ -132,6 +148,8 @@
     Cell *newCell(CellKind kind) {
         Cell *c = (Cell *) malloc(sizeof(Cell));
         c->kind = kind;
+        if (kind != NUMBER)
+            numbers_only = false;
         return c;
     }
 %}
