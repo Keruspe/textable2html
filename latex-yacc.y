@@ -8,11 +8,13 @@
     extern int yylex (void);
     extern int yylex_destroy(void);
 
+    typedef enum {
+        NUMBER,
+        STRING
+    } CellKind;
+
     typedef struct Cell {
-        enum {
-            NUMBER,
-            STRING
-        } kind;
+        CellKind kind;
         union {
             char *string;
             float number;
@@ -25,13 +27,15 @@
         struct Line *next;
     } Line;
 
+    typedef enum {
+        COL = 'c',
+        LEFT = 'l',
+        RIGHT = 'r',
+        SEP = '|'
+    } FormatKind;
+
     typedef struct Format {
-        enum {
-            COL = 'c',
-            LEFT = 'l',
-            RIGHT = 'r',
-            SEP = '|'
-        } kind;
+        FormatKind kind;
         struct Format *next;
     } Format;
 
@@ -103,6 +107,33 @@
         }
         free(t);
     }
+
+    Table *newTable(Format *format, Line *lines) {
+        Table *t = (Table *) malloc(sizeof(Table));
+        t->format = format;
+        t->lines = lines;
+        return t;
+    }
+
+    Format *newFormat(FormatKind kind, Format *next) {
+        Format *f = (Format *) malloc(sizeof(Format));
+        f->kind = kind;
+        f->next = next;
+        return f;
+    }
+
+    Line *newLine(Cell *cells, Line *next) {
+        Line *l = (Line *) malloc(sizeof(Line));
+        l->cells = cells;
+        l->next = next;
+        return l;
+    }
+
+    Cell *newCell(CellKind kind) {
+        Cell *c = (Cell *) malloc(sizeof(Cell));
+        c->kind = kind;
+        return c;
+    }
 %}
 
 %union {
@@ -152,40 +183,15 @@ OUT : Garbage Table {
       }
     ;
 
-Table : OpenBeginTab Format CloseBeginTab Lines EndTab {
-            Table *t = (Table *) malloc(sizeof(Table));
-            t->format = $2;
-            t->lines = $4;
-            $$ = t;
-        }
+Table : OpenBeginTab Format CloseBeginTab Lines EndTab { $$ = newTable($2, $4); }
       ;
 
-Format : FormatPiece {
-            Format *f = (Format *) malloc(sizeof(Format));
-            f->next = NULL;
-            f->kind = $1;
-            $$ = f;
-         }
-       | FormatPiece Format {
-            Format *f = (Format *) malloc(sizeof(Format));
-            f->next = $2;
-            f->kind = $1;
-            $$ = f;
-         }
+Format : FormatPiece { $$ = newFormat($1, NULL); }
+       | FormatPiece Format { $$ = newFormat($1, $2); }
        ;
 
-Lines : Line {
-            Line *l = (Line *) malloc(sizeof(Line));
-            l->cells = $1;
-            l->next = NULL;
-            $$ = l;
-        }
-      | Line NewLine Lines {
-            Line *l = (Line *) malloc(sizeof(Line));
-            l->cells = $1;
-            l->next = $3;
-            $$ = l;
-        }
+Lines : Line { $$ = newLine($1, NULL); }
+      | Line NewLine Lines { $$ = newLine($1, $3); }
       ;
 
 Line : Cell {
@@ -201,14 +207,12 @@ Line : Cell {
      ;
 
 Cell : String {
-            Cell *c = (Cell *) malloc(sizeof(Cell));
-            c->kind = STRING;
+            Cell *c = newCell(STRING);
             c->content.string = $1;
             $$ = c;
        }
      | Number {
-            Cell *c = (Cell *) malloc(sizeof(Cell));
-            c->kind = NUMBER;
+            Cell *c = newCell(NUMBER);
             c->content.number = $1;
             $$ = c;
        }
