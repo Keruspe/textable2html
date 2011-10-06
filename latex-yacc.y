@@ -27,6 +27,18 @@
         struct Line *next;
     } Line;
 
+    typedef enum {
+        COL = 'c',
+        LEFT = 'l',
+        RIGHT = 'r',
+        SEP = '|'
+    } FormatKind;
+
+    typedef struct Format {
+        FormatKind kind;
+        struct Format *next;
+    } Format;
+
     void printlines(Line *l) {
         Cell *cell;
         while (l) {
@@ -65,17 +77,35 @@
             l = t;
         }
     }
+
+    void printFormat(Format *f) {
+        while(f) {
+            printf("%c", f->kind);
+            f = f->next;
+        }
+        printf("\n");
+    }
+
+    void freeFormat(Format *f) {
+        while(f) {
+            Format *next = f->next;
+            free(f);
+            f = next;
+        }
+    }
 %}
 
-%union { float fval; char cval; char * sval; struct Line * line; struct Cell * cell; void * noval; }
+%union { float fval; char cval; char * sval; struct Line * line; struct Cell * cell; void * noval; struct Format * format; }
 %token <fval>  Number
-%token <sval>  String Format
+%token <sval>  String
+%token <cval> FormatPiece
 %token OpenBeginTab CloseBeginTab EndTab NewLine NewCell
 
 %type <line>  Table
 %type <line>  Lines
 %type <cell>  Line
 %type <cell>  Cell
+%type <format> Format
 %type <noval> Garbage
 %start OUT
 
@@ -86,8 +116,12 @@ OUT : Garbage Table { exit(0); }
     | Table { exit(0); }
     ;
 
-Table : OpenBeginTab Format CloseBeginTab Lines EndTab { printf("Format: %s\nContent:\n", $2); printlines($4); free($2); freelines($4); }
+Table : OpenBeginTab Format CloseBeginTab Lines EndTab { printf("Format:\n"); printFormat($2); printf("Content:\n"); printlines($4); freeFormat($2); freelines($4); }
       ;
+
+Format : FormatPiece { Format *f = (Format *) malloc(sizeof(Format)); f->next = NULL; f->kind = $1; $$ = f; }
+       | FormatPiece Format { Format *f = (Format *) malloc(sizeof(Format)); f->next = $2; f->kind = $1; $$ = f; }
+       ;
 
 Lines : Line { Line *l = (Line *) malloc(sizeof(Line)); l->cells = $1; l->next = NULL; $$ = l; }
       | Line NewLine Lines { Line *l = (Line *) malloc(sizeof(Line)); l->cells = $1; l->next = $3; $$ = l; }

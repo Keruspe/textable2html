@@ -22,6 +22,11 @@ STRINGENDING {CHARORBLANK}*{CHAR}
     return(NewCell);
 }
 
+[|crl] {
+    yylval.cval = yytext[0];
+    return(FormatPiece);
+}
+
 {NUMBER} {
     yylval.fval = atof(yytext);
     return(Number);
@@ -34,11 +39,6 @@ STRINGENDING {CHARORBLANK}*{CHAR}
 
 \\begin\{tabular\}\{ {
     return(OpenBeginTab);
-}
-
-[|crl]+ {
-    yylval.sval = strdup(yytext);
-    return(Format);
 }
 
 \} {
