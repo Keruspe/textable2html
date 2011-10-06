@@ -41,21 +41,26 @@
 
     void printlines(Line *l) {
         Cell *cell;
+        printf("<table>\n");
         while (l) {
+            printf("    <tr>\n");
             cell = l->cells;
             while (cell) {
+                printf("        <td>");
                 switch (cell->kind) {
                 case NUMBER:
-                    printf("<%f> ", cell->content.number);
+                    printf("%f", cell->content.number);
                     break;
                 case STRING:
-                    printf("<%s> ", cell->content.string);
+                    printf("%s", cell->content.string);
                 }
+                printf("</td>\n");
                 cell = cell->next;
             }
-            printf("\n");
+            printf("    </tr>\n");
             l = l->next;
         }
+        printf("</table>");
     }
 
     void freelines(Line *l) {
