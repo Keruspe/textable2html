@@ -34,13 +34,14 @@
             while (cell) {
                 switch (cell->kind) {
                 case NUMBER:
-                    printf("%f\n", cell->content.number);
+                    printf("<%f> ", cell->content.number);
                     break;
                 case STRING:
-                    printf("%s\n", cell->content.string);
+                    printf("<%s> ", cell->content.string);
                 }
                 cell = cell->next;
             }
+            printf("\n");
             l = l->next;
         }
     }
@@ -68,16 +69,14 @@
 
 %union { float fval; char cval; char * sval; struct Line * line; struct Cell * cell; void * noval; }
 %token <fval>  Number
-%token <sval>  String
-%token <sval>  BeginTab EndTab
-%token <noval> NewLine
-%token <noval> NewCell
+%token <sval>  String Format
+%token OpenBeginTab CloseBeginTab EndTab NewLine NewCell
 
 %type <line>  Table
 %type <line>  Lines
 %type <cell>  Line
 %type <cell>  Cell
-%type <noval>  Garbage
+%type <noval> Garbage
 %start OUT
 
 %%
@@ -87,7 +86,7 @@ OUT : Garbage Table { exit(0); }
     | Table { exit(0); }
     ;
 
-Table : BeginTab Lines EndTab { printf("Format: %s\nContent:\n", $1); printlines($2); free($1); freelines($2); }
+Table : OpenBeginTab Format CloseBeginTab Lines EndTab { printf("Format: %s\nContent:\n", $2); printlines($4); free($2); freelines($4); }
       ;
 
 Lines : Line { Line *l = (Line *) malloc(sizeof(Line)); l->cells = $1; l->next = NULL; $$ = l; }

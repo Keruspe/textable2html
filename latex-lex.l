@@ -1,6 +1,9 @@
 BLANK [ \n\t]
 DIGIT [0-9]
-NUMBER {DIGIT}+\.?{DIGIT}*
+NUMBER {DIGIT}+"."?{DIGIT}*
+CHAR [a-zA-Z0-9_-]
+CHARORBLANK [\n\t a-zA-Z0-9_-]
+STRINGENDING {CHARORBLANK}*{CHAR}
 
 %{
     /* gwenael.pluchon@gmail.com */
@@ -24,15 +27,22 @@ NUMBER {DIGIT}+\.?{DIGIT}*
     return(Number);
 }
 
-[\n\t a-zA-Z0-9_-]+ {
+{CHAR}{STRINGENDING}? {
     yylval.sval = strdup(yytext);
     return(String);
 }
 
-\\begin\{tabular\}\{[|crl]+\}{BLANK}* {
-    yytext[yyleng-1] = '\0';
-    yylval.sval = strdup(yytext+16);
-    return(BeginTab);
+\\begin\{tabular\}\{ {
+    return(OpenBeginTab);
+}
+
+[|crl]+ {
+    yylval.sval = strdup(yytext);
+    return(Format);
+}
+
+\} {
+    return(CloseBeginTab);
 }
 
 \\end\{tabular\} {
