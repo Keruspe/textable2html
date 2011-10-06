@@ -23,17 +23,17 @@ STRINGENDING {CHARORBLANK}*{CHAR}
 }
 
 [|crl] {
-    yylval.cval = yytext[0];
+    yylval.character = yytext[0];
     return(FormatPiece);
 }
 
 {NUMBER} {
-    yylval.fval = atof(yytext);
+    yylval.number = atof(yytext);
     return(Number);
 }
 
 {CHAR}{STRINGENDING}? {
-    yylval.sval = strdup(yytext);
+    yylval.string = strdup(yytext);
     return(String);
 }
 
