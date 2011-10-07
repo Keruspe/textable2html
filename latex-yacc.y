@@ -16,12 +16,14 @@
         STRING
     } CellKind;
 
+    typedef union {
+        char *string;
+        float number;
+    } CellContent;
+
     typedef struct Cell {
         CellKind kind;
-        union {
-            char *string;
-            float number;
-        } content;
+        CellContent content;
         struct Cell *next;
     } Cell;
 
@@ -80,9 +82,10 @@
         return l;
     }
 
-    Cell *newCell(CellKind kind) {
+    Cell *newCell(CellKind kind, CellContent content) {
         Cell *c = (Cell *) malloc(sizeof(Cell));
         c->kind = kind;
+        c->content = content;
         if (kind != NUMBER)
             numbers_only = false;
         return c;
@@ -113,8 +116,8 @@
         if (numbers_only) {
             for (int i = 0; i <= t->nb_cell; ++i) {
                 Cell *tmp = total;
-                total = newCell(NUMBER);
-                total->content.number = 0;
+                CellContent cc = { .number = 0 };
+                total = newCell(NUMBER, cc);
                 total->next = tmp;
             }
         }
@@ -160,7 +163,7 @@
                 printf("        <td>%f</td>\n", total->content.number);
                 total = total->next;
             }
-            printf("    </tr>");
+            printf("    </tr>\n");
         }
         printf("</table>\n");
     }
@@ -258,16 +261,8 @@ Line : Cell {
        }
      ;
 
-Cell : String {
-            Cell *c = newCell(STRING);
-            c->content.string = $1;
-            $$ = c;
-       }
-     | Number {
-            Cell *c = newCell(NUMBER);
-            c->content.number = $1;
-            $$ = c;
-       }
+Cell : String { $$ = newCell(STRING, *((CellContent *)&$1)); }
+     | Number { $$ = newCell(NUMBER, *((CellContent *)&$1)); }
      ;
 
 Garbage : String { $$ = NULL; }
