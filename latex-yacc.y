@@ -86,6 +86,8 @@
         sprintf(output_file, "%s", input_file);
         memcpy(output_file + strlen(input_file) - 3, "html", 5);
         FILE *out = fopen(output_file, "w");
+        if (!out)
+            out = stdout;
         free(output_file);
         fprintf(out, "<!DOCTYPE html>\n<html>\n    <head>\n        <title>Table</title>\n        <style>\n");
         if (t->borders)
