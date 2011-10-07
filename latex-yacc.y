@@ -193,7 +193,7 @@
 %token <number> Number
 %token <string> String
 %token <character> FormatPiece
-%token OpenBeginTab CloseBeginTab EndTab NewLine NewCell
+%token OpenBeginTab CloseBeginTab EndTab NewLine NewCell HLine
 
 %type <line> Lines
 %type <cell> Line
@@ -235,6 +235,8 @@ Format : FormatPiece { $$ = newFormat($1, NULL); }
 
 Lines : Line { $$ = newLine($1, NULL); }
       | Line NewLine Lines { $$ = newLine($1, $3); }
+      | HLine { $$ = NULL; }
+      | HLine Lines { $$ = $2; }
       ;
 
 Line : String {

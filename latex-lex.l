@@ -49,4 +49,8 @@ STRINGENDING {CHARORBLANK}*{CHAR}
     return(EndTab);
 }
 
+\\hline {
+    return(HLine);
+}
+
 . ;
