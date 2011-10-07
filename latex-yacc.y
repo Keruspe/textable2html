@@ -101,6 +101,7 @@
     }
 
     void printTable(Table *t) {
+        printf("<!DOCTYPE html>\n<html>\n    <head>\n        <title>Table</title>\n    </head>\n    <body>\n");
         Line *l = t->lines;
         Cell *total = NULL;
         if (numbers_only) {
@@ -109,15 +110,15 @@
                 total = newCell(NUMBER, cc, total);
             }
         }
-        printf("<table>\n");
+        printf("        <table>\n");
         while (l) {
-            printf("    <tr>\n");
+            printf("            <tr>\n");
             Cell *cell = l->cells;
             Cell *current = total;
             int i;
             float sum = 0;
             for (i = 0; cell && i < t->nb_cell; ++i) {
-                printf("        <td>");
+                printf("                <td>");
                 switch (cell->kind) {
                 case NUMBER:
                     printf("%f", cell->content.number);
@@ -136,24 +137,24 @@
             for (; i < t->nb_cell; ++i) {
                 if (numbers_only)
                     current = current->next;
-                printf("        <td></td>\n");
+                printf("                <td></td>\n");
             }
             if (numbers_only) {
                 current->content.number += sum;
-                printf("        <td>%f</td>\n", sum);
+                printf("                <td>%f</td>\n", sum);
             }
-            printf("    </tr>\n");
+            printf("            </tr>\n");
             l = l->next;
         }
         if (numbers_only) {
-            printf("    <tr>\n");
+            printf("            <tr>\n");
             while (total) {
-                printf("        <td>%f</td>\n", total->content.number);
+                printf("                <td>%f</td>\n", total->content.number);
                 total = total->next;
             }
-            printf("    </tr>\n");
+            printf("            </tr>\n");
         }
-        printf("</table>\n");
+        printf("        </table>\n    </body>\n</html>\n");
     }
 
     void freeTable(Table *t) {
