@@ -92,15 +92,6 @@
         return c;
     }
 
-    void printFormat(Format *f) {
-        printf("Format: ");
-        while(f) {
-            printf("%c", f->kind);
-            f = f->next;
-        }
-        printf("\n");
-    }
-
     void freeFormat(Format *f) {
         while(f) {
             Format *next = f->next;
@@ -110,8 +101,6 @@
     }
 
     void printTable(Table *t) {
-        printFormat(t->format);
-        printf("%s borders\n", t->borders ? "With" : "Without");
         Line *l = t->lines;
         Cell *total = NULL;
         if (numbers_only) {
