@@ -91,9 +91,10 @@
         if (!out)
             out = stdout;
         free(output_file);
-        fprintf(out, "<!DOCTYPE html>\n<html>\n    <head>\n        <title>Table</title>\n        <style>\n");
+        fprintf(out, "<!DOCTYPE html>\n<html>\n    <head>\n        <title>Table</title>\n        <style>\n            td { padding: 10px; ");
         if (t->borders)
-            fprintf(out, "            table { border-collapse: collapse; }\n            td { border: solid 1px; }\n");
+            fprintf(out, "border: solid 1px; }\n            table { border-collapse: collapse; ");
+        fprintf(out, "}\n");
         for (unsigned int i = 0, j = 0; i < strlen(t->format); ++i) {
             char *align;
             switch (t->format[i]) {
