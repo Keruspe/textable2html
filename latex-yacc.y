@@ -261,8 +261,14 @@ Line : Cell {
        }
      ;
 
-Cell : String { $$ = newCell(STRING, *((CellContent *)&$1)); }
-     | Number { $$ = newCell(NUMBER, *((CellContent *)&$1)); }
+Cell : String {
+           CellContent cc = { .string = $1 };
+           $$ = newCell(STRING, cc);
+       }
+     | Number {
+           CellContent cc = { .number = $1 };
+           $$ = newCell(NUMBER, cc);
+       }
      ;
 
 Garbage : String { $$ = NULL; }
