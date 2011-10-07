@@ -34,10 +34,10 @@
     } Line;
 
     typedef enum {
-        COL = 'c',
+        CENTER = 'c',
         LEFT = 'l',
         RIGHT = 'r',
-        SEP = '|'
+        SEPARATOR = '|'
     } FormatKind;
 
     typedef struct Table {
@@ -53,7 +53,7 @@
         t->lines = lines;
         int nb_cell = 0, nb_sep = 0;
         for (unsigned int i = 0; i < strlen(format); ++i) {
-            if (format[i] == SEP)
+            if (format[i] == SEPARATOR)
                 ++nb_sep;
             else
                 ++nb_cell;
@@ -82,8 +82,27 @@
 
     void printTable(Table *t) {
         printf("<!DOCTYPE html>\n<html>\n    <head>\n        <title>Table</title>\n");
+        printf("        <style>\n");
         if (t->borders)
-            printf("        <style>\n            table { border-collapse: all; }\n            tr td { border: solid 1px; }\n        </style>\n");
+            printf("            table { border-collapse: collapse; }\n            td { border: solid 1px; }\n");
+        for (unsigned int i = 0, j = 0; i < strlen(t->format); ++i) {
+            char *align;
+            switch (t->format[i]) {
+            case SEPARATOR:
+                continue;
+            case CENTER:
+                align = "center";
+                break;
+            case LEFT:
+                align = "left";
+                break;
+            case RIGHT:
+                align = "right";
+                break;
+            }
+            printf("            .col%u { text-align: %s }\n", j++, align);
+        }
+        printf("        </style>\n");
         printf("    </head>\n    <body>\n");
         Line *l = t->lines;
         Cell *total = NULL;
@@ -101,7 +120,7 @@
             int i;
             float sum = 0;
             for (i = 0; cell && i < t->nb_cell; ++i) {
-                printf("                <td>");
+                printf("                <td class=\"col%d\">", i);
                 switch (cell->kind) {
                 case NUMBER:
                     printf("%f", cell->content.number);
