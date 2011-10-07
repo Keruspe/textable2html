@@ -82,10 +82,11 @@
         return l;
     }
 
-    Cell *newCell(CellKind kind, CellContent content) {
+    Cell *newCell(CellKind kind, CellContent content, Cell *next) {
         Cell *c = (Cell *) malloc(sizeof(Cell));
         c->kind = kind;
         c->content = content;
+        c->next = next;
         if (kind != NUMBER)
             numbers_only = false;
         return c;
@@ -115,10 +116,8 @@
         Cell *total = NULL;
         if (numbers_only) {
             for (int i = 0; i <= t->nb_cell; ++i) {
-                Cell *tmp = total;
                 CellContent cc = { .number = 0 };
-                total = newCell(NUMBER, cc);
-                total->next = tmp;
+                total = newCell(NUMBER, cc, total);
             }
         }
         printf("<table>\n");
@@ -208,7 +207,7 @@
 %token OpenBeginTab CloseBeginTab EndTab NewLine NewCell
 
 %type <line> Lines
-%type <cell> Line Cell
+%type <cell> Line
 %type <format> Format
 %type <table> Table
 %type <dummy> Garbage
@@ -249,25 +248,21 @@ Lines : Line { $$ = newLine($1, NULL); }
       | Line NewLine Lines { $$ = newLine($1, $3); }
       ;
 
-Line : Cell {
-            Cell *c = $1;
-            c->next = NULL;
-            $$ = c;
-       }
-     | Cell NewCell Line  {
-            Cell *c = $1;
-            c->next = $3;
-            $$ = c;
-       }
-     ;
-
-Cell : String {
+Line : String {
            CellContent cc = { .string = $1 };
-           $$ = newCell(STRING, cc);
+           $$ = newCell(STRING, cc, NULL);
        }
      | Number {
            CellContent cc = { .number = $1 };
-           $$ = newCell(NUMBER, cc);
+           $$ = newCell(NUMBER, cc, NULL);
+       }
+     | String NewCell Line {
+           CellContent cc = { .string = $1 };
+           $$ = newCell(STRING, cc, $3);
+       }
+     | Number NewCell Line {
+           CellContent cc = { .number = $1 };
+           $$ = newCell(NUMBER, cc, $3);
        }
      ;
 
