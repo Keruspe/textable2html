@@ -114,7 +114,7 @@
             }
             fprintf(out, "            .col%u { text-align: %s }\n", j++, align);
         }
-        fprintf(out, "        </style>\n    </head>\n    <body>\n");
+        fprintf(out, "            .center { text-align: center; }\n            .left { text-align: left; }\n            .right { text-align: right; }\n        </style>\n    </head>\n    <body>\n");
         Line *l = t->lines;
         Cell *total = NULL;
         if (numbers_only) {
@@ -131,12 +131,27 @@
             int i;
             float sum = 0;
             for (i = 0; cell && i < t->nb_cell; ++i) {
-                fprintf(out, "                <td class=\"col%d\"", i);
+                fprintf(out, "                <td class=\"col%d", i);
                 if (cell->size > 1) {
-                    fprintf(out, " colspan=\"%d\"", cell->size);
+                    char *format;
+                    switch (cell->special_format) {
+                    case CENTER:
+                        format = "center";
+                        break;
+                    case LEFT:
+                        format = "left";
+                        break;
+                    case RIGHT:
+                        format = "right";
+                        break;
+                    case SEPARATOR:
+                        /* We should never get there */
+                        break;
+                    }
+                    fprintf(out, " %s\" colspan=\"%d\"", format, cell->size);
                     i += (cell->size - 1);
                 }
-                fprintf(out, ">");
+                fprintf(out, "\">");
                 switch (cell->kind) {
                 case NUMBER:
                     fprintf(out, "%f", cell->content.number);
