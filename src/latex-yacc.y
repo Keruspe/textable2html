@@ -98,6 +98,14 @@ Line : String {
            CellContent cc = { .number = $9 };
            $$ = new_cell (NUMBER, cc, $3, $6[0], $12);
        }
+     | NewCell {
+           CellContent cc = { .string = strdup ("") /* Since we always free it */ };
+           $$ = new_cell (STRING, cc, 1, '\0', NULL);
+       }
+     | NewCell Line {
+           CellContent cc = { .string = strdup ("") /* Since we always free it */ };
+           $$ = new_cell (STRING, cc, 1, '\0', $2);
+       }
      ;
 
 Garbage : String { $$ = NULL; }
