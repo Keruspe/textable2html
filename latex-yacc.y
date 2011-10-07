@@ -234,9 +234,12 @@ Format : FormatPiece { $$ = newFormat($1, NULL); }
        ;
 
 Lines : Line { $$ = newLine($1, NULL); }
+      | Line NewLine { $$ = newLine($1, NULL); }
       | Line NewLine Lines { $$ = newLine($1, $3); }
       | HLine { $$ = NULL; }
+      | HLine NewLine { $$ = NULL; }
       | HLine Lines { $$ = $2; }
+      | HLine NewLine Lines { $$ = $3; }
       ;
 
 Line : String {
