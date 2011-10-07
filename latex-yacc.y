@@ -10,6 +10,7 @@
     extern int yylex (void);
     extern int yylex_destroy(void);
 
+    const char *input_file;
     bool numbers_only = true;
 
     typedef enum {
@@ -81,10 +82,14 @@
     }
 
     void printTable(Table *t) {
-        printf("<!DOCTYPE html>\n<html>\n    <head>\n        <title>Table</title>\n");
-        printf("        <style>\n");
+        char *output_file = (char *) malloc((strlen(input_file) + 2) * sizeof(char));
+        sprintf(output_file, "%s", input_file);
+        memcpy(output_file + strlen(input_file) - 3, "html", 5);
+        FILE *out = fopen(output_file, "w");
+        free(output_file);
+        fprintf(out, "<!DOCTYPE html>\n<html>\n    <head>\n        <title>Table</title>\n        <style>\n");
         if (t->borders)
-            printf("            table { border-collapse: collapse; }\n            td { border: solid 1px; }\n");
+            fprintf(out, "            table { border-collapse: collapse; }\n            td { border: solid 1px; }\n");
         for (unsigned int i = 0, j = 0; i < strlen(t->format); ++i) {
             char *align;
             switch (t->format[i]) {
@@ -100,10 +105,9 @@
                 align = "right";
                 break;
             }
-            printf("            .col%u { text-align: %s }\n", j++, align);
+            fprintf(out, "            .col%u { text-align: %s }\n", j++, align);
         }
-        printf("        </style>\n");
-        printf("    </head>\n    <body>\n");
+        fprintf(out, "        </style>\n    </head>\n    <body>\n");
         Line *l = t->lines;
         Cell *total = NULL;
         if (numbers_only) {
@@ -112,23 +116,23 @@
                 total = newCell(NUMBER, cc, total);
             }
         }
-        printf("        <table>\n");
+        fprintf(out, "        <table>\n");
         while (l) {
-            printf("            <tr>\n");
+            fprintf(out, "            <tr>\n");
             Cell *cell = l->cells;
             Cell *current = total;
             int i;
             float sum = 0;
             for (i = 0; cell && i < t->nb_cell; ++i) {
-                printf("                <td class=\"col%d\">", i);
+                fprintf(out, "                <td class=\"col%d\">", i);
                 switch (cell->kind) {
                 case NUMBER:
-                    printf("%f", cell->content.number);
+                    fprintf(out, "%f", cell->content.number);
                     break;
                 case STRING:
-                    printf("%s", cell->content.string);
+                    fprintf(out, "%s", cell->content.string);
                 }
-                printf("</td>\n");
+                fprintf(out, "</td>\n");
                 if (numbers_only) {
                     sum += cell->content.number;
                     current->content.number += cell->content.number;
@@ -139,26 +143,27 @@
             for (; i < t->nb_cell; ++i) {
                 if (numbers_only)
                     current = current->next;
-                printf("                <td></td>\n");
+                fprintf(out, "                <td></td>\n");
             }
             if (numbers_only) {
                 current->content.number += sum;
-                printf("                <td>%f</td>\n", sum);
+                fprintf(out, "                <td>%f</td>\n", sum);
             }
-            printf("            </tr>\n");
+            fprintf(out, "            </tr>\n");
             l = l->next;
         }
         if (numbers_only) {
-            printf("            <tr>\n");
+            fprintf(out, "            <tr>\n");
             while (total) {
-                printf("                <td>%f</td>\n", total->content.number);
+                fprintf(out, "                <td>%f</td>\n", total->content.number);
                 Cell *tmp = total->next;
                 free(total);
                 total = tmp;
             }
-            printf("            </tr>\n");
+            fprintf(out, "            </tr>\n");
         }
-        printf("        </table>\n    </body>\n</html>\n");
+        fprintf(out, "        </table>\n    </body>\n</html>\n");
+        fclose(out);
     }
 
     void freeTable(Table *t) {
@@ -290,7 +295,8 @@ int main(int argc, char *argv[]) {
         fprintf (stderr, "usage: %s <file>\n", argv[0]);
         yyerror ("bad invocation");
     }
-    yyin = fopen(argv[1], "r");
+    input_file = argv[1];
+    yyin = fopen(input_file, "r");
     yyparse();
     yylex_destroy();
     fclose (yyin);
