@@ -237,6 +237,8 @@
 
 %start OUT
 
+%expect 2 /* See in Garbage */
+
 %%
 OUT : Garbage Table {
             printTable($2);
@@ -288,7 +290,6 @@ Line : String {
            CellContent cc = { .number = $1 };
            $$ = newCell(NUMBER, cc, 1, '\0', $3);
        }
-       /* TODO: handle format for multi-cell */
      | MultiColumn Open Number Close Open Format Close Open String Close {
            CellContent cc = { .string = $9 };
            $$ = newCell(STRING, cc, $3, $6[0], NULL);
@@ -321,9 +322,9 @@ Garbage : String { $$ = NULL; }
         | Garbage NewLine { $$ = NULL; }
         | Garbage NewCell { $$ = NULL; }
         | Garbage BeginTab { $$ = NULL; }
-        /* These two rules cause shift/reduce warnings...
+        /* The two following rules cause shift/reduce warnings... */
         | Garbage Open { $$ = NULL; }
-        | Garbage Close { $$ = NULL; }*/
+        | Garbage Close { $$ = NULL; }
         | Garbage EndTab { $$ = NULL; }
         | Garbage HLine { $$ = NULL; }
         ;
