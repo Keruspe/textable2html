@@ -94,7 +94,7 @@ htmlize (Table *t)
                     break;
                 }
                 fprintf (out,
-                        " %s\" colspan=\"%d\"", format, cell->size);
+                        " %s\" colspan=\"%d", format, cell->size);
                 i += (cell->size - 1);
             }
             fprintf (out,
