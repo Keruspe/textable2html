@@ -145,19 +145,19 @@
             for (; i < t->nb_cell; ++i) {
                 if (numbers_only)
                     current = current->next;
-                fprintf(out, "                <td></td>\n");
+                fprintf(out, "                <td class=\"col%d\"></td>\n", i);
             }
             if (numbers_only) {
                 current->content.number += sum;
-                fprintf(out, "                <td>%f</td>\n", sum);
+                fprintf(out, "                <td class=\"col%d\">%f</td>\n", i, sum);
             }
             fprintf(out, "            </tr>\n");
             l = l->next;
         }
         if (numbers_only) {
             fprintf(out, "            <tr>\n");
-            while (total) {
-                fprintf(out, "                <td>%f</td>\n", total->content.number);
+            for (int i = 0; total; ++i) {
+                fprintf(out, "                <td class=\"col%d\">%f</td>\n", i, total->content.number);
                 Cell *tmp = total->next;
                 free(total);
                 total = tmp;
