@@ -49,74 +49,6 @@
         int nb_cell;
     } Table;
 
-    void printFormat(Format *f) {
-        printf("Format: ");
-        while(f) {
-            printf("%c", f->kind);
-            f = f->next;
-        }
-        printf("\n");
-    }
-
-    void freeFormat(Format *f) {
-        while(f) {
-            Format *next = f->next;
-            free(f);
-            f = next;
-        }
-    }
-
-    void printTable(Table *t) {
-        printFormat(t->format);
-        printf("%s borders\n", t->borders ? "With" : "Without");
-        Line *l = t->lines;
-        printf("<table>\n");
-        while (l) {
-            printf("    <tr>\n");
-            Cell *cell = l->cells;
-            int i;
-            for (i = 0; cell && i < t->nb_cell; ++i) {
-                printf("        <td>");
-                switch (cell->kind) {
-                case NUMBER:
-                    printf("%f", cell->content.number);
-                    break;
-                case STRING:
-                    printf("%s", cell->content.string);
-                }
-                printf("</td>\n");
-                cell = cell->next;
-            }
-            for (; i < t->nb_cell; ++i)
-                printf("        <td></td>\n");
-            printf("    </tr>\n");
-            l = l->next;
-        }
-        printf("</table>\n");
-    }
-
-    void freeTable(Table *t) {
-        freeFormat(t->format);
-        Line *l = t->lines;
-        while (l) {
-            Line *next = l->next;
-            Cell *cell = l->cells;
-            while (cell) {
-                Cell *tmp = cell->next;
-                switch (cell->kind) {
-                case STRING:
-                    free(cell->content.string);
-                case NUMBER:
-                    free(cell);
-                }
-                cell = tmp;
-            }
-            free(l);
-            l = next;
-        }
-        free(t);
-    }
-
     Table *newTable(Format *format, Line *lines) {
         Table *t = (Table *) malloc(sizeof(Table));
         t->format = format;
@@ -154,6 +86,105 @@
         if (kind != NUMBER)
             numbers_only = false;
         return c;
+    }
+
+    void printFormat(Format *f) {
+        printf("Format: ");
+        while(f) {
+            printf("%c", f->kind);
+            f = f->next;
+        }
+        printf("\n");
+    }
+
+    void freeFormat(Format *f) {
+        while(f) {
+            Format *next = f->next;
+            free(f);
+            f = next;
+        }
+    }
+
+    void printTable(Table *t) {
+        printFormat(t->format);
+        printf("%s borders\n", t->borders ? "With" : "Without");
+        Line *l = t->lines;
+        Cell *total = NULL;
+        if (numbers_only) {
+            for (int i = 0; i <= t->nb_cell; ++i) {
+                Cell *tmp = total;
+                total = newCell(NUMBER);
+                total->content.number = 0;
+                total->next = tmp;
+            }
+        }
+        printf("<table>\n");
+        while (l) {
+            printf("    <tr>\n");
+            Cell *cell = l->cells;
+            Cell *current = total;
+            int i;
+            float sum = 0;
+            for (i = 0; cell && i < t->nb_cell; ++i) {
+                printf("        <td>");
+                switch (cell->kind) {
+                case NUMBER:
+                    printf("%f", cell->content.number);
+                    break;
+                case STRING:
+                    printf("%s", cell->content.string);
+                }
+                printf("</td>\n");
+                if (numbers_only) {
+                    sum += cell->content.number;
+                    current->content.number += cell->content.number;
+                    current = current->next;
+                }
+                cell = cell->next;
+            }
+            for (; i < t->nb_cell; ++i) {
+                if (numbers_only)
+                    current = current->next;
+                printf("        <td></td>\n");
+            }
+            if (numbers_only) {
+                current->content.number += sum;
+                printf("        <td>%f</td>\n", sum);
+            }
+            printf("    </tr>\n");
+            l = l->next;
+        }
+        if (numbers_only) {
+            printf("    <tr>\n");
+            while (total) {
+                printf("        <td>%f</td>\n", total->content.number);
+                total = total->next;
+            }
+            printf("    </tr>");
+        }
+        printf("</table>\n");
+    }
+
+    void freeTable(Table *t) {
+        freeFormat(t->format);
+        Line *l = t->lines;
+        while (l) {
+            Line *next = l->next;
+            Cell *cell = l->cells;
+            while (cell) {
+                Cell *tmp = cell->next;
+                switch (cell->kind) {
+                case STRING:
+                    free(cell->content.string);
+                case NUMBER:
+                    free(cell);
+                }
+                cell = tmp;
+            }
+            free(l);
+            l = next;
+        }
+        free(t);
     }
 %}
 
