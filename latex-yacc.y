@@ -74,7 +74,8 @@
         while (l) {
             printf("    <tr>\n");
             Cell *cell = l->cells;
-            for (int i = 0; cell && i < t->nb_cell; ++i) {
+            int i;
+            for (i = 0; cell && i < t->nb_cell; ++i) {
                 printf("        <td>");
                 switch (cell->kind) {
                 case NUMBER:
@@ -86,6 +87,8 @@
                 printf("</td>\n");
                 cell = cell->next;
             }
+            for (; i < t->nb_cell; ++i)
+                printf("        <td></td>\n");
             printf("    </tr>\n");
             l = l->next;
         }
