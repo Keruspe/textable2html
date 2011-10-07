@@ -1,5 +1,6 @@
 %{
-    #include <stdbool.h>
+    #include "types.h"
+
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
@@ -9,43 +10,6 @@
 
     const char *input_file;
     bool numbers_only = true;
-
-    typedef enum {
-        NUMBER,
-        STRING
-    } CellKind;
-
-    typedef union {
-        char *string;
-        float number;
-    } CellContent;
-
-    typedef enum {
-        CENTER = 'c',
-        LEFT = 'l',
-        RIGHT = 'r',
-        SEPARATOR = '|'
-    } FormatKind;
-
-    typedef struct Cell {
-        CellKind kind;
-        CellContent content;
-        int size;
-        FormatKind special_format;
-        struct Cell *next;
-    } Cell;
-
-    typedef struct Line {
-        Cell *cells;
-        struct Line *next;
-    } Line;
-
-    typedef struct Table {
-        char *format;
-        Line *lines;
-        bool borders;
-        int nb_cell;
-    } Table;
 
     Table *newTable(char *format, Line *lines) {
         Table *t = (Table *) malloc(sizeof(Table));
