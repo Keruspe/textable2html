@@ -1,6 +1,6 @@
 #include "construct.h"
 
-bool numbers_only = true;
+extern bool numbers_only;
 
 Table *
 new_table (char *format, Line *lines)

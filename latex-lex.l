@@ -14,50 +14,50 @@ STRINGENDING {CHARORBLANK}*{CHAR}
 \n ;
 
 {BLANK}*\\\\{BLANK}* {
-    return(NewLine);
+    return (NewLine);
 }
 
 {BLANK}*"&"{BLANK}* {
-    return(NewCell);
+    return (NewCell);
 }
 
 [|crl]+ {
     yylval.string = strdup(yytext);
-    return(Format);
+    return (Format);
 }
 
 {NUMBER} {
     yylval.number = atof(yytext);
-    return(Number);
+    return (Number);
 }
 
 {CHAR}{STRINGENDING}? {
     yylval.string = strdup(yytext);
-    return(String);
+    return (String);
 }
 
 {BLANK}*\\begin{BLANK}*\{{BLANK}*tabular{BLANK}*\}{BLANK}* {
-    return(BeginTab);
+    return (BeginTab);
 }
 
 {BLANK}*\\multicolumn{BLANK}* {
-    return(MultiColumn);
+    return (MultiColumn);
 }
 
 {BLANK}*\{{BLANK}* {
-    return(Open);
+    return (Open);
 }
 
 {BLANK}*\}{BLANK}* {
-    return(Close);
+    return (Close);
 }
 
 {BLANK}*\\end{BLANK}*\{{BLANK}*tabular{BLANK}*\}{BLANK}* {
-    return(EndTab);
+    return (EndTab);
 }
 
 {BLANK}*\\hline{BLANK}* {
-    return(HLine);
+    return (HLine);
 }
 
 . ;
