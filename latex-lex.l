@@ -40,6 +40,10 @@ STRINGENDING {CHARORBLANK}*{CHAR}
     return(BeginTab);
 }
 
+{BLANK}*\\multicolumn{BLANK}* {
+    return(MultiColumn);
+}
+
 {BLANK}*\{{BLANK}* {
     return(Open);
 }

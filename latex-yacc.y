@@ -26,6 +26,7 @@
     typedef struct Cell {
         CellKind kind;
         CellContent content;
+        int size;
         struct Cell *next;
     } Cell;
 
@@ -71,10 +72,11 @@
         return l;
     }
 
-    Cell *newCell(CellKind kind, CellContent content, Cell *next) {
+    Cell *newCell(CellKind kind, CellContent content, int size, Cell *next) {
         Cell *c = (Cell *) malloc(sizeof(Cell));
         c->kind = kind;
         c->content = content;
+        c->size = size;
         c->next = next;
         if (kind != NUMBER)
             numbers_only = false;
@@ -115,7 +117,7 @@
         if (numbers_only) {
             for (int i = 0; i <= t->nb_cell; ++i) {
                 CellContent cc = { .number = 0 };
-                total = newCell(NUMBER, cc, total);
+                total = newCell(NUMBER, cc, 1, total);
             }
         }
         fprintf(out, "        <table>\n");
@@ -126,7 +128,12 @@
             int i;
             float sum = 0;
             for (i = 0; cell && i < t->nb_cell; ++i) {
-                fprintf(out, "                <td class=\"col%d\">", i);
+                fprintf(out, "                <td class=\"col%d\"", i);
+                if (cell->size > 1) {
+                    fprintf(out, " colspan=\"%d\"", cell->size);
+                    ++i;
+                }
+                fprintf(out, ">");
                 switch (cell->kind) {
                 case NUMBER:
                     fprintf(out, "%f", cell->content.number);
@@ -203,7 +210,7 @@
 
 %token <number> Number
 %token <string> String Format
-%token BeginTab Open Close EndTab NewLine NewCell HLine
+%token BeginTab Open Close EndTab NewLine NewCell HLine MultiColumn
 
 %type <line> Lines
 %type <cell> Line
@@ -249,19 +256,36 @@ Lines : Line { $$ = newLine($1, NULL); }
 
 Line : String {
            CellContent cc = { .string = $1 };
-           $$ = newCell(STRING, cc, NULL);
-       }
-     | Number {
-           CellContent cc = { .number = $1 };
-           $$ = newCell(NUMBER, cc, NULL);
+           $$ = newCell(STRING, cc, 1, NULL);
        }
      | String NewCell Line {
            CellContent cc = { .string = $1 };
-           $$ = newCell(STRING, cc, $3);
+           $$ = newCell(STRING, cc, 1, $3);
+       }
+     | Number {
+           CellContent cc = { .number = $1 };
+           $$ = newCell(NUMBER, cc, 1, NULL);
        }
      | Number NewCell Line {
            CellContent cc = { .number = $1 };
-           $$ = newCell(NUMBER, cc, $3);
+           $$ = newCell(NUMBER, cc, 1, $3);
+       }
+       /* TODO: handle format for multi-cell */
+     | MultiColumn Open Number Close Open Format Close Open String Close {
+           CellContent cc = { .string = $9 };
+           $$ = newCell(STRING, cc, $3, NULL);
+       }
+     | MultiColumn Open Number Close Open Format Close Open String Close NewCell Line {
+           CellContent cc = { .string = $9 };
+           $$ = newCell(STRING, cc, $3, $12);
+       }
+     | MultiColumn Open Number Close Open Format Close Open Number Close {
+           CellContent cc = { .number = $9 };
+           $$ = newCell(NUMBER, cc, $3, NULL);
+       }
+     | MultiColumn Open Number Close Open Format Close Open Number Close NewCell Line {
+           CellContent cc = { .number = $9 };
+           $$ = newCell(NUMBER, cc, $3, $12);
        }
      ;
 
