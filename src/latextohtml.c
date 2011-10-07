@@ -60,7 +60,7 @@ htmlize (Table *t)
     Line *l = t->lines;
     Cell *total = NULL;
     if (numbers_only) {
-        for (int i = 0; i <= t->nb_cell; ++i) {
+        for (unsigned int i = 0; i <= t->nb_cell; ++i) {
             CellContent cc = { .number = 0 };
             total = new_cell (NUMBER, cc, 1, '\0', total);
         }
@@ -72,7 +72,7 @@ htmlize (Table *t)
                 "            <tr>\n");
         Cell *cell = l->cells;
         Cell *current = total;
-        int i;
+        unsigned int i;
         float sum = 0;
         for (i = 0; cell && i < t->nb_cell; ++i) {
             fprintf (out,
@@ -135,7 +135,7 @@ htmlize (Table *t)
     if (numbers_only) {
         fprintf (out,
                 "            <tr>\n");
-        for (int i = 0; total; ++i) {
+        for (unsigned int i = 0; total; ++i) {
             fprintf (out,
                     "                <td class=\"col%d\">%f</td>\n", i, total->content.number);
             Cell *next = total->next;

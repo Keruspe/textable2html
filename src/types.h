@@ -23,7 +23,7 @@ typedef union {
 typedef struct Cell {
     CellKind kind;
     CellContent content;
-    int size;
+    unsigned int size;
     FormatKind special_format;
     struct Cell *next;
 } Cell;
@@ -37,7 +37,7 @@ typedef struct Table {
     char *format;
     Line *lines;
     bool borders;
-    int nb_cell;
+    unsigned int nb_cell;
 } Table;
 
 #endif /*__TYPES_H__*/

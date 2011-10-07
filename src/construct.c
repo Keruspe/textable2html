@@ -8,7 +8,7 @@ new_table (char *format, Line *lines)
     Table *t = (Table *) malloc (sizeof (Table));
     t->format = format;
     t->lines = lines;
-    int nb_cell = 0, nb_sep = 0;
+    unsigned int nb_cell = 0, nb_sep = 0;
     for (unsigned int i = 0; i < strlen (format); ++i) {
         if (format[i] == SEPARATOR)
             ++nb_sep;
@@ -30,7 +30,7 @@ new_line (Cell *cells, Line *next)
 }
 
 Cell *
-new_cell (CellKind kind, CellContent content, int size, FormatKind format, Cell *next)
+new_cell (CellKind kind, CellContent content, unsigned int size, FormatKind format, Cell *next)
 {
     Cell *cell = (Cell *) malloc (sizeof (Cell));
     cell->kind = kind;
