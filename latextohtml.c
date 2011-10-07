@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 extern FILE * yyin;
-extern const char *input_file;
+const char *input_file;
 
 extern int yylex_destroy ();
 extern int yyparse ();

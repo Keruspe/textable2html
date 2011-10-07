@@ -1,5 +1,5 @@
 tmp_sources = latex-lex.c latex-yacc.c
-sources = $(tmp_sources) latextohtml.c
+sources = $(tmp_sources) construct.c latextohtml.c
 objects = $(sources:.c=.o)
 bin     = latextohtml
 

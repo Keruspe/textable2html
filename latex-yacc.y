@@ -1,52 +1,15 @@
 %{
-    #include "types.h"
+    #include "construct.h"
 
     #include <stdio.h>
-    #include <stdlib.h>
-    #include <string.h>
 
     extern int yylex ();
     extern void yyerror (char *error);
 
-    const char *input_file;
-    bool numbers_only = true;
+    extern const char *input_file;
+    extern bool numbers_only;
 
-    Table *newTable(char *format, Line *lines) {
-        Table *t = (Table *) malloc(sizeof(Table));
-        t->format = format;
-        t->lines = lines;
-        int nb_cell = 0, nb_sep = 0;
-        for (unsigned int i = 0; i < strlen(format); ++i) {
-            if (format[i] == SEPARATOR)
-                ++nb_sep;
-            else
-                ++nb_cell;
-        }
-        t->borders = (nb_sep > nb_cell/2);
-        t->nb_cell = nb_cell;
-        return t;
-    }
-
-    Line *newLine(Cell *cells, Line *next) {
-        Line *l = (Line *) malloc(sizeof(Line));
-        l->cells = cells;
-        l->next = next;
-        return l;
-    }
-
-    Cell *newCell(CellKind kind, CellContent content, int size, FormatKind format, Cell *next) {
-        Cell *c = (Cell *) malloc(sizeof(Cell));
-        c->kind = kind;
-        c->content = content;
-        c->size = size;
-        c->special_format = format;
-        c->next = next;
-        if (kind != NUMBER)
-            numbers_only = false;
-        return c;
-    }
-
-    void printTable(Table *t) {
+    void print_table(Table *t) {
         char *output_file = (char *) malloc((strlen(input_file) + 2) * sizeof(char));
         sprintf(output_file, "%s", input_file);
         memcpy(output_file + strlen(input_file) - 3, "html", 5);
@@ -81,7 +44,7 @@
         if (numbers_only) {
             for (int i = 0; i <= t->nb_cell; ++i) {
                 CellContent cc = { .number = 0 };
-                total = newCell(NUMBER, cc, 1, '\0', total);
+                total = new_cell(NUMBER, cc, 1, '\0', total);
             }
         }
         fprintf(out, "        <table>\n");
@@ -153,28 +116,6 @@
         fprintf(out, "        </table>\n    </body>\n</html>\n");
         fclose(out);
     }
-
-    void freeTable(Table *t) {
-        free(t->format);
-        Line *l = t->lines;
-        while (l) {
-            Line *next = l->next;
-            Cell *cell = l->cells;
-            while (cell) {
-                Cell *tmp = cell->next;
-                switch (cell->kind) {
-                case STRING:
-                    free(cell->content.string);
-                case NUMBER:
-                    free(cell);
-                }
-                cell = tmp;
-            }
-            free(l);
-            l = next;
-        }
-        free(t);
-    }
 %}
 
 %union {
@@ -202,33 +143,33 @@
 
 %%
 OUT : Garbage Table {
-            printTable($2);
-            freeTable($2);
+            print_table($2);
+            free_table($2);
             exit(0);
       }
     | Table Garbage {
-            printTable($1);
-            freeTable($1);
+            print_table($1);
+            free_table($1);
             exit(0);
       }
     | Garbage Table Garbage {
-            printTable($2);
-            freeTable($2);
+            print_table($2);
+            free_table($2);
             exit(0);
       }
     | Table {
-            printTable($1);
-            freeTable($1);
+            print_table($1);
+            free_table($1);
             exit(0);
       }
     ;
 
-Table : BeginTab Open Format Close Lines EndTab { $$ = newTable($3, $5); }
+Table : BeginTab Open Format Close Lines EndTab { $$ = new_table($3, $5); }
       ;
 
-Lines : Line { $$ = newLine($1, NULL); }
-      | Line NewLine { $$ = newLine($1, NULL); }
-      | Line NewLine Lines { $$ = newLine($1, $3); }
+Lines : Line { $$ = new_line($1, NULL); }
+      | Line NewLine { $$ = new_line($1, NULL); }
+      | Line NewLine Lines { $$ = new_line($1, $3); }
       | HLine { $$ = NULL; }
       | HLine NewLine { $$ = NULL; }
       | HLine Lines { $$ = $2; }
@@ -237,35 +178,35 @@ Lines : Line { $$ = newLine($1, NULL); }
 
 Line : String {
            CellContent cc = { .string = $1 };
-           $$ = newCell(STRING, cc, 1, '\0', NULL);
+           $$ = new_cell(STRING, cc, 1, '\0', NULL);
        }
      | String NewCell Line {
            CellContent cc = { .string = $1 };
-           $$ = newCell(STRING, cc, 1, '\0', $3);
+           $$ = new_cell(STRING, cc, 1, '\0', $3);
        }
      | Number {
            CellContent cc = { .number = $1 };
-           $$ = newCell(NUMBER, cc, 1, '\0', NULL);
+           $$ = new_cell(NUMBER, cc, 1, '\0', NULL);
        }
      | Number NewCell Line {
            CellContent cc = { .number = $1 };
-           $$ = newCell(NUMBER, cc, 1, '\0', $3);
+           $$ = new_cell(NUMBER, cc, 1, '\0', $3);
        }
      | MultiColumn Open Number Close Open Format Close Open String Close {
            CellContent cc = { .string = $9 };
-           $$ = newCell(STRING, cc, $3, $6[0], NULL);
+           $$ = new_cell(STRING, cc, $3, $6[0], NULL);
        }
      | MultiColumn Open Number Close Open Format Close Open String Close NewCell Line {
            CellContent cc = { .string = $9 };
-           $$ = newCell(STRING, cc, $3, $6[0], $12);
+           $$ = new_cell(STRING, cc, $3, $6[0], $12);
        }
      | MultiColumn Open Number Close Open Format Close Open Number Close {
            CellContent cc = { .number = $9 };
-           $$ = newCell(NUMBER, cc, $3, $6[0], NULL);
+           $$ = new_cell(NUMBER, cc, $3, $6[0], NULL);
        }
      | MultiColumn Open Number Close Open Format Close Open Number Close NewCell Line {
            CellContent cc = { .number = $9 };
-           $$ = newCell(NUMBER, cc, $3, $6[0], $12);
+           $$ = new_cell(NUMBER, cc, $3, $6[0], $12);
        }
      ;
 
