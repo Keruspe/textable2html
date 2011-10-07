@@ -2,6 +2,7 @@
     #include <stdbool.h>
     #include <stdio.h>
     #include <stdlib.h>
+    #include <string.h>
 
     extern FILE * yyin;
     void yyerror (char * error);
@@ -39,40 +40,27 @@
         SEP = '|'
     } FormatKind;
 
-    typedef struct Format {
-        FormatKind kind;
-        struct Format *next;
-    } Format;
-
     typedef struct Table {
-        Format *format;
+        char *format;
         Line *lines;
         bool borders;
         int nb_cell;
     } Table;
 
-    Table *newTable(Format *format, Line *lines) {
+    Table *newTable(char *format, Line *lines) {
         Table *t = (Table *) malloc(sizeof(Table));
         t->format = format;
         t->lines = lines;
         int nb_cell = 0, nb_sep = 0;
-        while (format) {
-            if (format->kind == SEP)
+        for (unsigned int i = 0; i < strlen(format); ++i) {
+            if (format[i] == SEP)
                 ++nb_sep;
             else
                 ++nb_cell;
-            format = format->next;
         }
         t->borders = (nb_sep > nb_cell/2);
         t->nb_cell = nb_cell;
         return t;
-    }
-
-    Format *newFormat(FormatKind kind, Format *next) {
-        Format *f = (Format *) malloc(sizeof(Format));
-        f->kind = kind;
-        f->next = next;
-        return f;
     }
 
     Line *newLine(Cell *cells, Line *next) {
@@ -92,16 +80,11 @@
         return c;
     }
 
-    void freeFormat(Format *f) {
-        while(f) {
-            Format *next = f->next;
-            free(f);
-            f = next;
-        }
-    }
-
     void printTable(Table *t) {
-        printf("<!DOCTYPE html>\n<html>\n    <head>\n        <title>Table</title>\n    </head>\n    <body>\n");
+        printf("<!DOCTYPE html>\n<html>\n    <head>\n        <title>Table</title>\n");
+        if (t->borders)
+            printf("        <style>\n            table { border-collapse: all; }\n            tr td { border: solid 1px; }\n        </style>\n");
+        printf("    </head>\n    <body>\n");
         Line *l = t->lines;
         Cell *total = NULL;
         if (numbers_only) {
@@ -160,7 +143,7 @@
     }
 
     void freeTable(Table *t) {
-        freeFormat(t->format);
+        free(t->format);
         Line *l = t->lines;
         while (l) {
             Line *next = l->next;
@@ -188,19 +171,16 @@
     char *string;
     struct Line *line;
     struct Cell *cell;
-    struct Format *format;
     struct Table *table;
     void *dummy;
 }
 
 %token <number> Number
-%token <string> String
-%token <character> FormatPiece
+%token <string> String Format
 %token OpenBeginTab CloseBeginTab EndTab NewLine NewCell HLine
 
 %type <line> Lines
 %type <cell> Line
-%type <format> Format
 %type <table> Table
 %type <dummy> Garbage
 
@@ -231,10 +211,6 @@ OUT : Garbage Table {
 
 Table : OpenBeginTab Format CloseBeginTab Lines EndTab { $$ = newTable($2, $4); }
       ;
-
-Format : FormatPiece { $$ = newFormat($1, NULL); }
-       | FormatPiece Format { $$ = newFormat($1, $2); }
-       ;
 
 Lines : Line { $$ = newLine($1, NULL); }
       | Line NewLine { $$ = newLine($1, NULL); }
@@ -267,7 +243,6 @@ Garbage : String { $$ = NULL; }
         | Number { $$ = NULL; }
         | NewLine { $$ = NULL; }
         | NewCell { $$ = NULL; }
-        | FormatPiece { $$ = NULL; }
         | OpenBeginTab { $$ = NULL; }
         | CloseBeginTab { $$ = NULL; }
         | EndTab { $$ = NULL; }
@@ -276,7 +251,6 @@ Garbage : String { $$ = NULL; }
         | Garbage Number { $$ = NULL; }
         | Garbage NewLine { $$ = NULL; }
         | Garbage NewCell { $$ = NULL; }
-        | Garbage FormatPiece { $$ = NULL; }
         | Garbage OpenBeginTab { $$ = NULL; }
         | Garbage CloseBeginTab { $$ = NULL; }
         | Garbage EndTab { $$ = NULL; }

@@ -6,7 +6,6 @@ CHARORBLANK [\n\t a-zA-Z0-9_-]
 STRINGENDING {CHARORBLANK}*{CHAR}
 
 %{
-    /* gwenael.pluchon@gmail.com */
     #include "y.tab.h"
     #include <string.h>
 %}
@@ -22,9 +21,9 @@ STRINGENDING {CHARORBLANK}*{CHAR}
     return(NewCell);
 }
 
-[|crl] {
-    yylval.character = yytext[0];
-    return(FormatPiece);
+[|crl]+ {
+    yylval.string = strdup(yytext);
+    return(Format);
 }
 
 {NUMBER} {
