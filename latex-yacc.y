@@ -150,7 +150,9 @@
             printf("            <tr>\n");
             while (total) {
                 printf("                <td>%f</td>\n", total->content.number);
-                total = total->next;
+                Cell *tmp = total->next;
+                free(total);
+                total = tmp;
             }
             printf("            </tr>\n");
         }
