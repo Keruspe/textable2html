@@ -203,7 +203,7 @@
 
 %token <number> Number
 %token <string> String Format
-%token OpenBeginTab CloseBeginTab EndTab NewLine NewCell HLine
+%token BeginTab Open Close EndTab NewLine NewCell HLine
 
 %type <line> Lines
 %type <cell> Line
@@ -235,7 +235,7 @@ OUT : Garbage Table {
       }
     ;
 
-Table : OpenBeginTab Format CloseBeginTab Lines EndTab { $$ = newTable($2, $4); }
+Table : BeginTab Open Format Close Lines EndTab { $$ = newTable($3, $5); }
       ;
 
 Lines : Line { $$ = newLine($1, NULL); }
@@ -269,16 +269,18 @@ Garbage : String { $$ = NULL; }
         | Number { $$ = NULL; }
         | NewLine { $$ = NULL; }
         | NewCell { $$ = NULL; }
-        | OpenBeginTab { $$ = NULL; }
-        | CloseBeginTab { $$ = NULL; }
+        | BeginTab { $$ = NULL; }
+        | Open { $$ = NULL; }
+        | Close { $$ = NULL; }
         | EndTab { $$ = NULL; }
         | HLine { $$ = NULL; }
         | Garbage String { $$ = NULL; }
         | Garbage Number { $$ = NULL; }
         | Garbage NewLine { $$ = NULL; }
         | Garbage NewCell { $$ = NULL; }
-        | Garbage OpenBeginTab { $$ = NULL; }
-        | Garbage CloseBeginTab { $$ = NULL; }
+        | Garbage BeginTab { $$ = NULL; }
+        | Garbage Open { $$ = NULL; }
+        | Garbage Close { $$ = NULL; }
         | Garbage EndTab { $$ = NULL; }
         | Garbage HLine { $$ = NULL; }
         ;

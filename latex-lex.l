@@ -36,19 +36,23 @@ STRINGENDING {CHARORBLANK}*{CHAR}
     return(String);
 }
 
-\\begin\{tabular\}\{ {
-    return(OpenBeginTab);
+{BLANK}*\\begin{BLANK}*\{{BLANK}*tabular{BLANK}*\}{BLANK}* {
+    return(BeginTab);
 }
 
-\} {
-    return(CloseBeginTab);
+{BLANK}*\{{BLANK}* {
+    return(Open);
 }
 
-\\end\{tabular\} {
+{BLANK}*\}{BLANK}* {
+    return(Close);
+}
+
+{BLANK}*\\end{BLANK}*\{{BLANK}*tabular{BLANK}*\}{BLANK}* {
     return(EndTab);
 }
 
-\\hline {
+{BLANK}*\\hline{BLANK}* {
     return(HLine);
 }
 
