@@ -132,7 +132,7 @@
                 fprintf(out, "                <td class=\"col%d\"", i);
                 if (cell->size > 1) {
                     fprintf(out, " colspan=\"%d\"", cell->size);
-                    ++i;
+                    i += (cell->size - 1);
                 }
                 fprintf(out, ">");
                 switch (cell->kind) {
