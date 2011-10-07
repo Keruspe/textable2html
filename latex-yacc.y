@@ -4,11 +4,8 @@
     #include <stdlib.h>
     #include <string.h>
 
-    extern FILE * yyin;
-    void yyerror (char * error);
-    int yyparse ();
-    extern int yylex (void);
-    extern int yylex_destroy(void);
+    extern int yylex ();
+    extern void yyerror (char *error);
 
     const char *input_file;
     bool numbers_only = true;
@@ -329,27 +326,4 @@ Garbage : String { $$ = NULL; }
         | Garbage HLine { $$ = NULL; }
         ;
 %%
-
-void
-yyerror(char * error)
-{
-    fprintf(stderr, "Error : %s\n", error);
-    yylex_destroy();
-    exit (1);
-}
-
-int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        fprintf (stderr, "usage: %s <file>\n", argv[0]);
-        yyerror ("bad invocation");
-    }
-    input_file = argv[1];
-    yyin = fopen(input_file, "r");
-    yyparse();
-    yylex_destroy();
-    fclose (yyin);
-    return 0;
-}
-
-
 
