@@ -321,8 +321,9 @@ Garbage : String { $$ = NULL; }
         | Garbage NewLine { $$ = NULL; }
         | Garbage NewCell { $$ = NULL; }
         | Garbage BeginTab { $$ = NULL; }
+        /* These two rules cause shift/reduce warnings...
         | Garbage Open { $$ = NULL; }
-        | Garbage Close { $$ = NULL; }
+        | Garbage Close { $$ = NULL; }*/
         | Garbage EndTab { $$ = NULL; }
         | Garbage HLine { $$ = NULL; }
         ;
