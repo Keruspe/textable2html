@@ -1,12 +1,12 @@
-tmp_sources = latex-lex.c latex-yacc.c
-sources = $(tmp_sources) construct.c latextohtml.c
+tmp_sources = src/latex-lex.c src/latex-yacc.c
+sources = $(tmp_sources) src/construct.c src/latextohtml.c
 objects = $(sources:.c=.o)
 bin     = latextohtml
 
 LEX     = flex
 YACC    = bison -y
 
-D_CFLAGS  = -g -ggdb3 -Wall -Wextra -Wno-unused-function -pedantic -std=gnu99 -O3 -march=native
+D_CFLAGS  = -g -ggdb3 -Wall -Wextra -Wno-unused-function -pedantic -std=gnu99 -O3 -march=native -I.. -I.
 D_LDFLAGS = -Wl,-O3 -Wl,--as-needed
 D_YFLAGS  = -d
 
@@ -19,8 +19,8 @@ all: $(bin)
 $(bin): $(objects)
 	$(LINK.c) $^ $(LOADLIBES) $(LDLIBS) -o $@ -lfl
 
-latex-yacc.o: latex-yacc.y
-latex-lex.o: latex-lex.l latex-yacc.c y.tab.h
+src/latex-yacc.o: src/latex-yacc.y
+src/latex-lex.o: src/latex-lex.l src/latex-yacc.c y.tab.h
 
 clean:
 	$(RM) $(tmp_sources) $(objects) $(bin) y.tab.h
