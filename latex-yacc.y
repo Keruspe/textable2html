@@ -267,10 +267,20 @@ Garbage : String { $$ = NULL; }
         | Number { $$ = NULL; }
         | NewLine { $$ = NULL; }
         | NewCell { $$ = NULL; }
+        | FormatPiece { $$ = NULL; }
+        | OpenBeginTab { $$ = NULL; }
+        | CloseBeginTab { $$ = NULL; }
+        | EndTab { $$ = NULL; }
+        | HLine { $$ = NULL; }
         | Garbage String { $$ = NULL; }
         | Garbage Number { $$ = NULL; }
         | Garbage NewLine { $$ = NULL; }
         | Garbage NewCell { $$ = NULL; }
+        | Garbage FormatPiece { $$ = NULL; }
+        | Garbage OpenBeginTab { $$ = NULL; }
+        | Garbage CloseBeginTab { $$ = NULL; }
+        | Garbage EndTab { $$ = NULL; }
+        | Garbage HLine { $$ = NULL; }
         ;
 %%
 
