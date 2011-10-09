@@ -20,7 +20,7 @@
 
 %token <number> Number
 %token <string> String Format
-%token BeginTab Open Close EndTab NewLine NewCell HLine MultiColumn
+%token Begin End Open Close Tabular NewLine NewCell HLine MultiColumn
 
 %type <line> Lines
 %type <cell> Line
@@ -54,7 +54,7 @@ OUT : Garbage Table {
       }
     ;
 
-Table : BeginTab Open Format Close Lines EndTab { $$ = new_table ($3, $5); }
+Table : Begin Open Tabular Close Open Format Close Lines End Open Tabular Close { $$ = new_table ($6, $8); }
       ;
 
 Lines : Line { $$ = new_line ($1, NULL); }
@@ -112,20 +112,22 @@ Garbage : String { $$ = NULL; }
         | Number { $$ = NULL; }
         | NewLine { $$ = NULL; }
         | NewCell { $$ = NULL; }
-        | BeginTab { $$ = NULL; }
+        | Begin { $$ = NULL; }
+        | End { $$ = NULL; }
         | Open { $$ = NULL; }
         | Close { $$ = NULL; }
-        | EndTab { $$ = NULL; }
+        | Tabular { $$ = NULL; }
         | HLine { $$ = NULL; }
         | Garbage String { $$ = NULL; }
         | Garbage Number { $$ = NULL; }
         | Garbage NewLine { $$ = NULL; }
         | Garbage NewCell { $$ = NULL; }
-        | Garbage BeginTab { $$ = NULL; }
+        | Garbage Begin { $$ = NULL; }
+        | Garbage End { $$ = NULL; }
         /* The two following rules cause shift/reduce warnings... */
         | Garbage Open { $$ = NULL; }
         | Garbage Close { $$ = NULL; }
-        | Garbage EndTab { $$ = NULL; }
+        | Garbage Tabular { $$ = NULL; }
         | Garbage HLine { $$ = NULL; }
         ;
 %%

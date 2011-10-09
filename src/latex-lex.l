@@ -26,18 +26,16 @@ STRINGENDING {CHARORBLANK}*{CHAR}
     return (Format);
 }
 
-{NUMBER} {
-    yylval.number = atof(yytext);
-    return (Number);
+{BLANK}*tabular{BLANK}* {
+    return (Tabular);
 }
 
-{CHAR}{STRINGENDING}? {
-    yylval.string = strdup(yytext);
-    return (String);
+{BLANK}*\\begin{BLANK}* {
+    return (Begin);
 }
 
-{BLANK}*\\begin{BLANK}*\{{BLANK}*tabular{BLANK}*\}{BLANK}* {
-    return (BeginTab);
+{BLANK}*\\end{BLANK}* {
+    return (End);
 }
 
 {BLANK}*\\multicolumn{BLANK}* {
@@ -52,12 +50,18 @@ STRINGENDING {CHARORBLANK}*{CHAR}
     return (Close);
 }
 
-{BLANK}*\\end{BLANK}*\{{BLANK}*tabular{BLANK}*\}{BLANK}* {
-    return (EndTab);
-}
-
 {BLANK}*\\hline{BLANK}* {
     return (HLine);
+}
+
+{NUMBER} {
+    yylval.number = atof(yytext);
+    return (Number);
+}
+
+{CHAR}{STRINGENDING}? {
+    yylval.string = strdup(yytext);
+    return (String);
 }
 
 . ;
