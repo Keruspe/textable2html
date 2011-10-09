@@ -30,6 +30,10 @@ STRINGENDING {CHARORBLANK}*{CHAR}
     return (Tabular);
 }
 
+{BLANK}*table{BLANK}* {
+    return (TableTok);
+}
+
 {BLANK}*\\begin{BLANK}* {
     return (Begin);
 }
