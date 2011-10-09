@@ -146,7 +146,11 @@ htmlize (Table *table)
                 "            </tr>\n");
     }
     fprintf (out,
-            "        </table>\n"
+            "        </table>\n");
+    if (table->caption)
+        fprintf (out,
+            "        <em>%s</em>\n", table->caption);
+    fprintf (out,
             "    </body>\n"
             "</html>\n");
     fclose (out);
