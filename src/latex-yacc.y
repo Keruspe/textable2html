@@ -25,7 +25,7 @@
 %type <line> Lines
 %type <cell> Line
 %type <table> Table
-%type <dummy> Garbage
+%type <dummy> Garbage BeginTable EndTable
 
 %start OUT
 
@@ -54,8 +54,14 @@ OUT : Garbage Table {
       }
     ;
 
-Table : Begin Open Tabular Close Open Format Close Lines End Open Tabular Close { $$ = new_table ($6, $8); }
+Table : BeginTable Format Close Lines EndTable { $$ = new_table ($2, $5); }
       ;
+
+BeginTable : Begin Open Tabular Close Open { $$ = NULL; }
+           ;
+
+EndTable : End Open Tabular Close { $$ = NULL; }
+         ;
 
 Lines : Line { $$ = new_line ($1, NULL); }
       | Line NewLine { $$ = new_line ($1, NULL); }
