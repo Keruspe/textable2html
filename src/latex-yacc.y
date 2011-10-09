@@ -20,7 +20,7 @@
 
 %token <number> Number
 %token <string> String Format
-%token Begin End Open Close Tabular TableTok NewLine NewCell HLine MultiColumn
+%token Begin End Open Close Tabular TableTok NewLine NewCell HLine MultiColumn Caption
 
 %type <line> Lines
 %type <cell> Line
@@ -54,8 +54,10 @@ OUT : Garbage Table {
       }
     ;
 
-Table : BeginTabular Format Close Lines EndTabular { $$ = new_table ($2, $4); }
-      | BeginTable BeginTabular Format Close Lines EndTabular EndTable { $$ = new_table ($3, $5); }
+Table : BeginTabular Format Close Lines EndTabular { $$ = new_table ($2, $4, NULL); }
+      | BeginTable BeginTabular Format Close Lines EndTabular EndTable { $$ = new_table ($3, $5, NULL); }
+      | BeginTable BeginTabular Format Close Lines EndTabular Caption Open String Close EndTable { $$ = new_table ($3, $5, $9); }
+      | BeginTable Caption Open String Close BeginTabular Format Close Lines EndTabular EndTable { $$ = new_table ($7, $9, $4); }
       ;
 
 BeginTabular : Begin Open Tabular Close Open { $$ = NULL; }

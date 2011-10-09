@@ -46,6 +46,10 @@ STRINGENDING {CHARORBLANK}*{CHAR}
     return (MultiColumn);
 }
 
+{BLANK}*\\caption{BLANK}* {
+    return (Caption);
+}
+
 {BLANK}*\{{BLANK}* {
     return (Open);
 }

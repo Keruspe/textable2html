@@ -38,6 +38,7 @@ typedef struct Table {
     Line *lines;
     bool borders;
     unsigned int nb_cell;
+    char *caption;
 } Table;
 
 #endif /*__TYPES_H__*/
