@@ -5,29 +5,29 @@ extern bool numbers_only;
 Table *
 new_table (char *format, Line *lines, char *caption)
 {
-    Table *t = (Table *) malloc (sizeof (Table));
-    t->format = format;
-    t->lines = lines;
-    unsigned int nb_cell = 0, nb_sep = 0;
+    Table *table = (Table *) malloc (sizeof (Table));
+    table->format = format;
+    table->lines = lines;
+    unsigned int nb_cell = 0, nb_separator = 0;
     for (unsigned int i = 0; i < strlen (format); ++i) {
         if (format[i] == SEPARATOR)
-            ++nb_sep;
+            ++nb_separator;
         else
             ++nb_cell;
     }
-    t->borders = (nb_sep > (nb_cell / 2));
-    t->nb_cell = nb_cell;
-    t->caption = caption;
-    return t;
+    table->borders = (nb_separator > (nb_cell / 2));
+    table->nb_cell = nb_cell;
+    table->caption = caption;
+    return table;
 }
 
 Line *
 new_line (Cell *cells, Line *next)
 {
-    Line *l = (Line *) malloc (sizeof (Line));
-    l->cells = cells;
-    l->next = next;
-    return l;
+    Line *line = (Line *) malloc (sizeof (Line));
+    line->cells = cells;
+    line->next = next;
+    return line;
 }
 
 Cell *

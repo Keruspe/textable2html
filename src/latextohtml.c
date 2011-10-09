@@ -11,7 +11,7 @@ extern int yylex_destroy ();
 extern int yyparse ();
 
 void
-htmlize (Table *t)
+htmlize (Table *table)
 {
     char *output_file = (char *) malloc ((strlen (input_file) + 2) * sizeof (char));
     sprintf (output_file, "%s", input_file);
@@ -27,14 +27,14 @@ htmlize (Table *t)
             "        <title>Table</title>\n"
             "        <style>\n"
             "            td { padding: 10px; ");
-    if (t->borders)
+    if (table->borders)
         fprintf (out,
                 "border: solid 1px; }\n"
                 "            table { border-collapse: collapse; ");
     fprintf (out, "}\n");
-    for (unsigned int i = 0, j = 0; i < strlen (t->format); ++i) {
+    for (unsigned int i = 0, j = 0; i < strlen (table->format); ++i) {
         char *align;
-        switch (t->format[i]) {
+        switch (table->format[i]) {
         case SEPARATOR:
             continue;
         case CENTER:
@@ -57,24 +57,24 @@ htmlize (Table *t)
             "        </style>\n"
             "    </head>\n"
             "    <body>\n");
-    Line *l = t->lines;
-    Cell *total = NULL;
+    Line *line = table->lines;
+    Cell *totals = NULL;
     if (numbers_only) {
-        for (unsigned int i = 0; i <= t->nb_cell; ++i) {
-            CellContent cc = { .number = 0 };
-            total = new_cell (NUMBER, cc, 1, '\0', total);
+        for (unsigned int i = 0; i <= table->nb_cell; ++i) {
+            CellContent content = { .number = 0 };
+            totals = new_cell (NUMBER, content, 1, '\0', totals);
         }
     }
     fprintf (out,
             "        <table>\n");
-    while (l) {
+    while (line) {
         fprintf (out,
                 "            <tr>\n");
-        Cell *cell = l->cells;
-        Cell *current = total;
+        Cell *cell = line->cells;
+        Cell *current = totals;
         unsigned int i;
         float sum = 0;
-        for (i = 0; cell && i < t->nb_cell; ++i) {
+        for (i = 0; cell && i < table->nb_cell; ++i) {
             fprintf (out,
                     "                <td class=\"col%d", i);
             if (cell->size > 1) {
@@ -117,7 +117,7 @@ htmlize (Table *t)
             }
             cell = cell->next;
         }
-        for (; i < t->nb_cell; ++i) {
+        for (; i < table->nb_cell; ++i) {
             if (numbers_only)
                 current = current->next;
             fprintf (out,
@@ -130,17 +130,17 @@ htmlize (Table *t)
         }
         fprintf (out,
                 "            </tr>\n");
-        l = l->next;
+        line = line->next;
     }
     if (numbers_only) {
         fprintf (out,
                 "            <tr>\n");
-        for (unsigned int i = 0; total; ++i) {
+        for (unsigned int i = 0; totals; ++i) {
             fprintf (out,
-                    "                <td class=\"col%d\">%f</td>\n", i, total->content.number);
-            Cell *next = total->next;
-            free (total);
-            total = next;
+                    "                <td class=\"col%d\">%f</td>\n", i, totals->content.number);
+            Cell *next = totals->next;
+            free (totals);
+            totals = next;
         }
         fprintf (out,
                 "            </tr>\n");
