@@ -14,7 +14,7 @@ CFLAGS  := $(D_CFLAGS) $(CFLAGS)
 LDFLAGS := $(D_LDFLAGS) $(LDFLAGS)
 YFLAGS  := $(D_YFLAGS) $(YFLAGS)
 
-all: $(bin)
+all: $(bin) samples
 
 $(bin): $(objects)
 	$(LINK.c) $^ $(LOADLIBES) $(LDLIBS) -o $@ -lfl
@@ -23,6 +23,11 @@ src/latex-yacc.o: src/latex-yacc.y
 src/latex-lex.o: src/latex-lex.l src/latex-yacc.c y.tab.h
 
 clean:
-	$(RM) $(tmp_sources) $(objects) $(bin) y.tab.h
+	$(RM) $(tmp_sources) $(objects) $(bin) y.tab.h sample/*.html
+
+samples: sample/test.html sample/full_numbers.html
+
+sample/%.html: sample/%.tex $(bin)
+	./$(bin) $<
 
 .PHONY: all clean
