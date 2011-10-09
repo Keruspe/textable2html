@@ -21,11 +21,18 @@ htmlize (Table *table)
         out = stdout;
     free (output_file);
     fprintf (out,
-            "<!DOCTYPE html>\n"
-            "<html>\n"
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
+            "<html version=\"-//W3C//DTD XHTML 1.1//EN\"\n"
+            "      xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\"\n"
+            "      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+            "      xsi:schemaLocation=\"http://www.w3.org/1999/xhtml\n"
+            "                          http://www.w3.org/MarkUp/SCHEMA/xhtml11.xsd\"\n"
+            ">\n"
             "    <head>\n"
+            "        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n"
             "        <title>Table</title>\n"
-            "        <style>\n"
+            "        <style type=\"text/css\">\n"
             "            td { padding: 10px; ");
     if (table->borders)
         fprintf (out,
@@ -56,7 +63,8 @@ htmlize (Table *table)
             "            .right { text-align: right; }\n"
             "        </style>\n"
             "    </head>\n"
-            "    <body>\n");
+            "    <body>\n"
+            "        <div>\n");
     Line *line = table->lines;
     Cell *totals = NULL;
     if (numbers_only) {
@@ -66,17 +74,17 @@ htmlize (Table *table)
         }
     }
     fprintf (out,
-            "        <table>\n");
+            "            <table>\n");
     while (line) {
         fprintf (out,
-                "            <tr>\n");
+                "                <tr>\n");
         Cell *cell = line->cells;
         Cell *current = totals;
         unsigned int i;
         float sum = 0;
         for (i = 0; cell && i < table->nb_cell; ++i) {
             fprintf (out,
-                    "                <td class=\"col%d", i);
+                    "                    <td class=\"col%d", i);
             if (cell->size > 1) {
                 char *format;
                 switch (cell->special_format) {
@@ -121,36 +129,37 @@ htmlize (Table *table)
             if (numbers_only)
                 current = current->next;
             fprintf (out,
-                    "                <td class=\"col%d\"></td>\n", i);
+                    "                    <td class=\"col%d\"></td>\n", i);
         }
         if (numbers_only) {
             current->content.number += sum;
             fprintf (out,
-                    "                <td class=\"col%d\">%f</td>\n", i, sum);
+                    "                    <td class=\"col%d\">%f</td>\n", i, sum);
         }
         fprintf (out,
-                "            </tr>\n");
+                "                </tr>\n");
         line = line->next;
     }
     if (numbers_only) {
         fprintf (out,
-                "            <tr>\n");
+                "                <tr>\n");
         for (unsigned int i = 0; totals; ++i) {
             fprintf (out,
-                    "                <td class=\"col%d\">%f</td>\n", i, totals->content.number);
+                    "                    <td class=\"col%d\">%f</td>\n", i, totals->content.number);
             Cell *next = totals->next;
             free (totals);
             totals = next;
         }
         fprintf (out,
-                "            </tr>\n");
+                "                </tr>\n");
     }
     fprintf (out,
-            "        </table>\n");
+            "            </table>\n");
     if (table->caption)
         fprintf (out,
-            "        <em>%s</em>\n", table->caption);
+            "            <em>%s</em>\n", table->caption);
     fprintf (out,
+            "        </div>\n"
             "    </body>\n"
             "</html>\n");
     fclose (out);
