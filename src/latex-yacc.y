@@ -20,12 +20,12 @@
 
 %token <number> Number
 %token <string> String Format
-%token Begin End Open Close Tabular TableTok NewLine NewCell HLine MultiColumn Caption
+%token Begin End Open Close Tabular TableTok NewLine NewCell HLine CLine MultiColumn Caption
 
 %type <line> Lines
 %type <cell> Line
 %type <table> Table
-%type <dummy> Garbage BeginTabular EndTabular BeginTable EndTable
+%type <dummy> Garbage BeginTabular EndTabular BeginTable EndTable Horizontal
 
 %start OUT
 
@@ -75,11 +75,15 @@ EndTable : End Open TableTok Close { $$ = NULL; }
 Lines : Line { $$ = new_line ($1, NULL); }
       | Line NewLine { $$ = new_line ($1, NULL); }
       | Line NewLine Lines { $$ = new_line ($1, $3); }
-      | HLine { $$ = NULL; }
-      | HLine NewLine { $$ = NULL; }
-      | HLine Lines { $$ = $2; }
-      | HLine NewLine Lines { $$ = $3; }
+      | Horizontal { $$ = NULL; }
+      | Horizontal NewLine { $$ = NULL; }
+      | Horizontal Lines { $$ = $2; }
+      | Horizontal NewLine Lines { $$ = $3; }
       ;
+
+Horizontal : HLine { $$ = NULL; }
+           | CLine Open String Close { $$ = NULL; }
+           ;
 
 Line : String {
            CellContent cc = { .string = $1 };
@@ -134,6 +138,7 @@ Garbage : String { $$ = NULL; }
         | TableTok { $$ = NULL; }
         | Tabular { $$ = NULL; }
         | HLine { $$ = NULL; }
+        | CLine { $$ = NULL; }
         | Garbage String { $$ = NULL; }
         | Garbage Number { $$ = NULL; }
         | Garbage NewLine { $$ = NULL; }
@@ -146,6 +151,7 @@ Garbage : String { $$ = NULL; }
         | Garbage TableTok { $$ = NULL; }
         | Garbage Tabular { $$ = NULL; }
         | Garbage HLine { $$ = NULL; }
+        | Garbage CLine { $$ = NULL; }
         ;
 %%
 

@@ -62,6 +62,10 @@ STRINGENDING {CHARORBLANK}*{CHAR}
     return (HLine);
 }
 
+{BLANK}*\\cline{BLANK}* {
+    return (CLine);
+}
+
 {NUMBER} {
     yylval.number = atof(yytext);
     return (Number);
