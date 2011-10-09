@@ -131,6 +131,7 @@ Garbage : String { $$ = NULL; }
         | End { $$ = NULL; }
         | Open { $$ = NULL; }
         | Close { $$ = NULL; }
+        | TableTok { $$ = NULL; }
         | Tabular { $$ = NULL; }
         | HLine { $$ = NULL; }
         | Garbage String { $$ = NULL; }
@@ -142,6 +143,7 @@ Garbage : String { $$ = NULL; }
         /* The two following rules cause shift/reduce warnings... */
         | Garbage Open { $$ = NULL; }
         | Garbage Close { $$ = NULL; }
+        | Garbage TableTok { $$ = NULL; }
         | Garbage Tabular { $$ = NULL; }
         | Garbage HLine { $$ = NULL; }
         ;
