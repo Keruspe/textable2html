@@ -20,7 +20,7 @@
 
 %token <number> Number
 %token <string> String Format
-%token Begin End Open Close Tabular TableTok NewLine NewCell HLine CLine MultiColumn Caption
+%token Begin End Open Close Tabular TableTok NewLine NewCell HLine CLine MultiColumn Caption LatexDirective
 
 %type <line> Lines
 %type <cell> Line
@@ -29,7 +29,7 @@
 
 %start OUT
 
-%expect 2 /* See in Garbage */
+%expect 6 /* In Garbage */
 
 %%
 OUT : Garbage Table {
@@ -139,6 +139,10 @@ Garbage : String { $$ = NULL; }
         | Tabular { $$ = NULL; }
         | HLine { $$ = NULL; }
         | CLine { $$ = NULL; }
+        | LatexDirective { $$ = NULL; }
+        /* The two following rules cause shift/reduce warnings... */
+        | Begin Open String Close { $$ = NULL; }
+        | End Open String Close { $$ = NULL; }
         | Garbage String { $$ = NULL; }
         | Garbage Number { $$ = NULL; }
         | Garbage NewLine { $$ = NULL; }
@@ -152,6 +156,10 @@ Garbage : String { $$ = NULL; }
         | Garbage Tabular { $$ = NULL; }
         | Garbage HLine { $$ = NULL; }
         | Garbage CLine { $$ = NULL; }
+        | Garbage LatexDirective { $$ = NULL; }
+        /* The two following rules cause shift/reduce warnings... */
+        | Garbage Begin Open String Close { $$ = NULL; }
+        | Garbage End Open String Close { $$ = NULL; }
         ;
 %%
 

@@ -1,9 +1,10 @@
 BLANK [ \n\t]
 DIGIT [0-9]
 NUMBER {DIGIT}+"."?{DIGIT}*
-CHAR [a-zA-Z0-9_-]
-CHARORBLANK [\n\t a-zA-Z0-9_-]
+CHAR [a-zA-Z0-9\[\]_-]
+CHARORBLANK [\n\t a-zA-Z0-9\[\]_-]
 STRINGENDING {CHARORBLANK}*{CHAR}
+STRING {CHAR}{STRINGENDING}?
 
 %{
     #include "y.tab.h"
@@ -66,12 +67,16 @@ STRINGENDING {CHARORBLANK}*{CHAR}
     return (CLine);
 }
 
+{BLANK}*\\{CHAR}+{BLANK}* {
+    return (LatexDirective);
+}
+
 {NUMBER} {
     yylval.number = atof(yytext);
     return (Number);
 }
 
-{CHAR}{STRINGENDING}? {
+{STRING} {
     yylval.string = strdup(yytext);
     return (String);
 }
