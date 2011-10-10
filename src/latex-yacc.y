@@ -61,12 +61,13 @@ Table : BeginTabular Format Close Lines EndTabular { $$ = new_table ($2, $4, NUL
       ;
 
 BeginTabular : Begin Open Tabular Close Open { $$ = NULL; }
-           ;
+             ;
 
 EndTabular : End Open Tabular Close { $$ = NULL; }
-         ;
+           ;
 
 BeginTable : Begin Open TableTok Close { $$ = NULL; }
+           | Begin Open TableTok Close String { $$ = NULL; }
            ;
 
 EndTable : End Open TableTok Close { $$ = NULL; }
