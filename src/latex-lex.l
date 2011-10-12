@@ -126,7 +126,7 @@ FORMAT [clr|]
     return (Serif);
 }
 
-{BLANK}*\\{CHAR}+{BLANK}* {
+\\{CHAR}+ {
     return (LatexDirective);
 }
 
@@ -138,6 +138,10 @@ FORMAT [clr|]
 {STRING} {
     yylval.string = strdup (yytext);
     return (String);
+}
+
+{BLANK}+ {
+    return (Blank);
 }
 
 . ;

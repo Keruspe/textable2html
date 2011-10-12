@@ -18,7 +18,7 @@
     void *dummy;
 }
 
-%token <string> String Number Format
+%token <string> String Number Format Blank
 %token Begin End Open Close Tabular TableTok NewLine NewCell HLine CLine MultiColumn Caption LatexDirective
 %token Alpha ALPHA Beta BETA Gamma GAMMA Delta DELTA
 %token Bold Italic SmallCaps Roman Serif
