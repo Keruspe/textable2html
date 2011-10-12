@@ -67,6 +67,38 @@ STRING {CHAR}{STRINGENDING}?
     return (CLine);
 }
 
+{BLANK}*\\alpha{BLANK}* {
+    return (Alpha);
+}
+
+{BLANK}*\\Alpha{BLANK}* {
+    return (ALPHA);
+}
+
+{BLANK}*\\beta{BLANK}* {
+    return (Beta);
+}
+
+{BLANK}*\\Beta{BLANK}* {
+    return (BETA);
+}
+
+{BLANK}*\\gamma{BLANK}* {
+    return (Gamma);
+}
+
+{BLANK}*\\Gamma{BLANK}* {
+    return (GAMMA);
+}
+
+{BLANK}*\\delta{BLANK}* {
+    return (Delta);
+}
+
+{BLANK}*\\Delta{BLANK}* {
+    return (DELTA);
+}
+
 {BLANK}*\\{CHAR}+{BLANK}* {
     return (LatexDirective);
 }
