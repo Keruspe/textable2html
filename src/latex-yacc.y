@@ -254,7 +254,7 @@ Text : String { $$ = $1; }
            free ($4);
            $$ = $1;
        }
-     /* There can be a number in the middle of a Text. causes 17 shift/reduce warnings */
+     /* There can be a number in the middle of a Text. the second rule causes 17 shift/reduce warnings */
      | Text Number {
            $1 = (char *) realloc ($1, (strlen ($1) + strlen ($2) + 1) * sizeof (char));
            strcat ($1, $2);
