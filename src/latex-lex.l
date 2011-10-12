@@ -14,7 +14,7 @@ STRING {CHAR}{STRINGENDING}?
 %%
 \n ;
 
-{BLANK}*\\\\{BLANK}* {
+{BLANK}*\\\\{BLANK}*|{BLANK}*\\newline{BLANK}* {
     return (NewLine);
 }
 
