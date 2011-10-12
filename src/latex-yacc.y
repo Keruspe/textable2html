@@ -31,7 +31,7 @@
 
 %start OUT
 
-%expect 34 /* In Garbage and Text */
+%expect 51 /* In Garbage and Text */
 
 %%
 OUT : Garbage Table {
@@ -154,7 +154,6 @@ Line : Text {
      ;
 
 Text : String { $$ = $1; }
-     /*| Number { $$ = $1; }*/
      | Alpha  { $$ = strdup ("&alpha;"); }
      | ALPHA  { $$ = strdup ("&Alpha;"); }
      | Beta   { $$ = strdup ("&beta;");  }
@@ -180,12 +179,6 @@ Text : String { $$ = $1; }
      | Serif Open Text Close { $$ = $3; }
      /* The following rules causes each one 2 shift/reduce warnings */
      | Text String {
-           $1 = (char *) realloc ($1, (strlen ($1) + strlen ($2) + 1) * sizeof (char));
-           strcat ($1, $2);
-           free ($2);
-           $$ = $1;
-       }
-     | Text Number {
            $1 = (char *) realloc ($1, (strlen ($1) + strlen ($2) + 1) * sizeof (char));
            strcat ($1, $2);
            free ($2);
@@ -259,6 +252,19 @@ Text : String { $$ = $1; }
            $1 = (char *) realloc ($1, (strlen ($1) + strlen ($4) + 1) * sizeof (char));
            strcat ($1, $4);
            free ($4);
+           $$ = $1;
+       }
+     /* There can be a number in the middle of a Text. causes 17 shift/reduce warnings */
+     | Text Number {
+           $1 = (char *) realloc ($1, (strlen ($1) + strlen ($2) + 1) * sizeof (char));
+           strcat ($1, $2);
+           free ($2);
+           $$ = $1;
+       }
+     | Number Text {
+           $1 = (char *) realloc ($1, (strlen ($1) + strlen ($2) + 1) * sizeof (char));
+           strcat ($1, $2);
+           free ($2);
            $$ = $1;
        }
      ;
