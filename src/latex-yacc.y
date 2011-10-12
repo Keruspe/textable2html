@@ -31,7 +31,7 @@
 
 %start OUT
 
-%expect 51 /* In Garbage and Text */
+%expect 67 /* In Garbage and mostly in Text */
 
 %%
 OUT : Garbage Table {
@@ -100,6 +100,7 @@ Lines : Line { $$ = new_line ($1, NULL); }
       ;
 
 Horizontal : HLine { $$ = NULL; }
+           | HLine Open Close { $$ = NULL; }
            | CLine Open Text Close { $$ = NULL; }
            ;
 
@@ -162,6 +163,14 @@ Text : String { $$ = $1; }
      | GAMMA  { $$ = strdup ("&Gamma;"); }
      | Delta  { $$ = strdup ("&delta;"); }
      | DELTA  { $$ = strdup ("&Delta;"); }
+     | Alpha Open Close   { $$ = strdup ("&alpha;"); }
+     | ALPHA Open Close   { $$ = strdup ("&Alpha;"); }
+     | Beta  Open Close   { $$ = strdup ("&beta;");  }
+     | BETA  Open Close   { $$ = strdup ("&Beta;");  }
+     | Gamma Open Close   { $$ = strdup ("&gamma;"); }
+     | GAMMA Open Close   { $$ = strdup ("&Gamma;"); }
+     | Delta Open Close   { $$ = strdup ("&delta;"); }
+     | DELTA Open Close   { $$ = strdup ("&Delta;"); }
      | Bold Open Text Close {
            char *string = (char *) malloc ((strlen ($3) + 8) * sizeof (char));
            sprintf (string, "<b>%s</b>", $3);
@@ -220,6 +229,46 @@ Text : String { $$ = $1; }
            $$ = $1;
        }
      | Text DELTA {
+           $1 = (char *) realloc ($1, (strlen ($1) + 8) * sizeof (char));
+           strcat ($1, "&Delta;");
+           $$ = $1;
+       }
+     | Text Alpha Open Close {
+           $1 = (char *) realloc ($1, (strlen ($1) + 8) * sizeof (char));
+           strcat ($1, "&alpha;");
+           $$ = $1;
+       }
+     | Text ALPHA Open Close {
+           $1 = (char *) realloc ($1, (strlen ($1) + 8) * sizeof (char));
+           strcat ($1, "&Alpha;");
+           $$ = $1;
+       }
+     | Text Beta Open Close {
+           $1 = (char *) realloc ($1, (strlen ($1) + 7) * sizeof (char));
+           strcat ($1, "&beta;");
+           $$ = $1;
+       }
+     | Text BETA Open Close {
+           $1 = (char *) realloc ($1, (strlen ($1) + 7) * sizeof (char));
+           strcat ($1, "&Beta;");
+           $$ = $1;
+       }
+     | Text Gamma Open Close {
+           $1 = (char *) realloc ($1, (strlen ($1) + 8) * sizeof (char));
+           strcat ($1, "&gamma;");
+           $$ = $1;
+       }
+     | Text GAMMA Open Close {
+           $1 = (char *) realloc ($1, (strlen ($1) + 8) * sizeof (char));
+           strcat ($1, "&Gamma;");
+           $$ = $1;
+       }
+     | Text Delta Open Close {
+           $1 = (char *) realloc ($1, (strlen ($1) + 8) * sizeof (char));
+           strcat ($1, "&delta;");
+           $$ = $1;
+       }
+     | Text DELTA Open Close {
            $1 = (char *) realloc ($1, (strlen ($1) + 8) * sizeof (char));
            strcat ($1, "&Delta;");
            $$ = $1;
