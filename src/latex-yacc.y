@@ -269,7 +269,10 @@ Text : String { $$ = $1; }
        }
      ;
 
-Garbage : Text { $$ = NULL; }
+Garbage : Text {
+              free ($1);
+              $$ = NULL;
+          }
         | NewLine { $$ = NULL; }
         | NewCell { $$ = NULL; }
         | Begin { $$ = NULL; }
@@ -282,9 +285,12 @@ Garbage : Text { $$ = NULL; }
         | CLine { $$ = NULL; }
         | LatexDirective { $$ = NULL; }
         /* The two following rules cause shift/reduce warnings... */
-        | Begin Open Text Close { $$ = NULL; }
-        | End Open Text Close { $$ = NULL; }
-        | Garbage Text { $$ = NULL; }
+        | BeginDummyRule { $$ = NULL; }
+        | EndDummyRule { $$ = NULL; }
+        | Garbage Text {
+              free ($2);
+              $$ = NULL;
+          }
         | Garbage NewLine { $$ = NULL; }
         | Garbage NewCell { $$ = NULL; }
         | Garbage Begin { $$ = NULL; }
@@ -298,8 +304,8 @@ Garbage : Text { $$ = NULL; }
         | Garbage CLine { $$ = NULL; }
         | Garbage LatexDirective { $$ = NULL; }
         /* The two following rules cause shift/reduce warnings... */
-        | Garbage Begin Open Text Close { $$ = NULL; }
-        | Garbage End Open Text Close { $$ = NULL; }
+        | Garbage BeginDummyRule { $$ = NULL; }
+        | Garbage EndDummyRule { $$ = NULL; }
         ;
 %%
 
