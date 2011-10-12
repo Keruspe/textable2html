@@ -2,6 +2,7 @@
 
 const char *input_file;
 bool numbers_only = true;
+int nb_line = 1;
 
 extern FILE * yyin;
 
@@ -166,7 +167,7 @@ htmlize (Table *table)
 void
 yyerror(char *error)
 {
-    fprintf (stderr, "Error : %s\n", error);
+    fprintf (stderr, "Error line %d: %s\n", nb_line, error);
     yylex_destroy ();
     exit (1);
 }

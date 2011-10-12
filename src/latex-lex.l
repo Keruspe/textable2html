@@ -1,28 +1,35 @@
-BLANK [ \n\t]
+BLANK [ \t]
 DIGIT [0-9]
 NUMBER {DIGIT}+"."?{DIGIT}*
 CHAR [a-zA-Z0-9\[\]_-]
-CHARORBLANK [\n\t a-zA-Z0-9\[\]_-]
+CHARORBLANK [\t a-zA-Z0-9\[\]_-]
 STRINGENDING {CHARORBLANK}*{CHAR}
 STRING {CHAR}{STRINGENDING}?
+NEWLINE \\\\
+NEWCELL "&"
+FORMAT [clr|]
 
 %{
     #include "y.tab.h"
     #include <string.h>
+
+    extern int nb_line;
 %}
 
 %%
-\n ;
+{BLANK}*\n{BLANK}* {
+    ++nb_line;
+}
 
-{BLANK}*\\\\{BLANK}*|{BLANK}*\\newline{BLANK}* {
+{BLANK}*{NEWLINE}{BLANK}*|{BLANK}*\\newline{BLANK}* {
     return (NewLine);
 }
 
-{BLANK}*"&"{BLANK}* {
+{BLANK}*{NEWCELL}{BLANK}* {
     return (NewCell);
 }
 
-[|crl]+ {
+{BLANK}*{FORMAT}+{BLANK}* {
     yylval.string = strdup(yytext);
     return (Format);
 }
@@ -95,7 +102,7 @@ STRING {CHAR}{STRINGENDING}?
     return (Delta);
 }
 
-\\Delta{BLANK}* {
+\\Delta {
     return (DELTA);
 }
 
