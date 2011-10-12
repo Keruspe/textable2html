@@ -95,7 +95,7 @@ STRING {CHAR}{STRINGENDING}?
     return (Delta);
 }
 
-\\Delta {
+\\Delta{BLANK}* {
     return (DELTA);
 }
 
@@ -124,12 +124,12 @@ STRING {CHAR}{STRINGENDING}?
 }
 
 {NUMBER} {
-    yylval.number = atof(yytext);
+    yylval.string = strdup (yytext);
     return (Number);
 }
 
 {STRING} {
-    yylval.string = strdup(yytext);
+    yylval.string = strdup (yytext);
     return (String);
 }
 

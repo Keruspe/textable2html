@@ -18,8 +18,7 @@
     void *dummy;
 }
 
-%token <number> Number
-%token <string> String Format
+%token <string> String Number Format
 %token Begin End Open Close Tabular TableTok NewLine NewCell HLine CLine MultiColumn Caption LatexDirective
 %token Alpha ALPHA Beta BETA Gamma GAMMA Delta DELTA
 %token Bold Italic SmallCaps Roman Serif
@@ -113,28 +112,36 @@ Line : Text {
            $$ = new_cell (STRING, cc, 1, '\0', $3);
        }
      | Number {
-           CellContent cc = { .number = $1 };
+           CellContent cc = { .number = atof ($1) };
+           free ($1);
            $$ = new_cell (NUMBER, cc, 1, '\0', NULL);
        }
      | Number NewCell Line {
-           CellContent cc = { .number = $1 };
+           CellContent cc = { .number = atof ($1) };
+           free ($1);
            $$ = new_cell (NUMBER, cc, 1, '\0', $3);
        }
      | MultiColumn Open Number Close Open Format Close Open Text Close {
            CellContent cc = { .string = $9 };
-           $$ = new_cell (STRING, cc, $3, $6[0], NULL);
+           $$ = new_cell (STRING, cc, atof ($3), $6[0], NULL);
+           free ($3);
        }
      | MultiColumn Open Number Close Open Format Close Open Text Close NewCell Line {
            CellContent cc = { .string = $9 };
-           $$ = new_cell (STRING, cc, $3, $6[0], $12);
+           $$ = new_cell (STRING, cc, atof ($3), $6[0], $12);
+           free ($3);
        }
      | MultiColumn Open Number Close Open Format Close Open Number Close {
-           CellContent cc = { .number = $9 };
-           $$ = new_cell (NUMBER, cc, $3, $6[0], NULL);
+           CellContent cc = { .number = atof ($9) };
+           free ($9);
+           $$ = new_cell (NUMBER, cc, atof ($3), $6[0], NULL);
+           free ($3);
        }
      | MultiColumn Open Number Close Open Format Close Open Number Close NewCell Line {
-           CellContent cc = { .number = $9 };
-           $$ = new_cell (NUMBER, cc, $3, $6[0], $12);
+           CellContent cc = { .number = atof ($9) };
+           free ($9);
+           $$ = new_cell (NUMBER, cc, atof ($3), $6[0], $12);
+           free ($3);
        }
      | NewCell {
            CellContent cc = { .string = strdup ("") /* Since we always free it */ };
@@ -147,6 +154,7 @@ Line : Text {
      ;
 
 Text : String { $$ = $1; }
+     /*| Number { $$ = $1; }*/
      | Alpha  { $$ = strdup ("&alpha;"); }
      | ALPHA  { $$ = strdup ("&Alpha;"); }
      | Beta   { $$ = strdup ("&beta;");  }
@@ -172,6 +180,12 @@ Text : String { $$ = $1; }
      | Serif Open Text Close { $$ = $3; }
      /* The following rules causes each one 2 shift/reduce warnings */
      | Text String {
+           $1 = (char *) realloc ($1, (strlen ($1) + strlen ($2) + 1) * sizeof (char));
+           strcat ($1, $2);
+           free ($2);
+           $$ = $1;
+       }
+     | Text Number {
            $1 = (char *) realloc ($1, (strlen ($1) + strlen ($2) + 1) * sizeof (char));
            strcat ($1, $2);
            free ($2);
@@ -250,7 +264,6 @@ Text : String { $$ = $1; }
      ;
 
 Garbage : Text { $$ = NULL; }
-        | Number { $$ = NULL; }
         | NewLine { $$ = NULL; }
         | NewCell { $$ = NULL; }
         | Begin { $$ = NULL; }
@@ -266,7 +279,6 @@ Garbage : Text { $$ = NULL; }
         | Begin Open Text Close { $$ = NULL; }
         | End Open Text Close { $$ = NULL; }
         | Garbage Text { $$ = NULL; }
-        | Garbage Number { $$ = NULL; }
         | Garbage NewLine { $$ = NULL; }
         | Garbage NewCell { $$ = NULL; }
         | Garbage Begin { $$ = NULL; }
