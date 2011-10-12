@@ -9,6 +9,7 @@
 Table *new_table (char *format, Line *lines, char *caption);
 Line *new_line (Cell *cells, Line *next);
 Cell *new_cell (CellKind kind, CellContent content, unsigned int size, FormatKind format, Cell *next);
+char *make_caps (char *string);
 void free_table (Table *table);
 
 #endif /*__CONSTRUCT_H__*/

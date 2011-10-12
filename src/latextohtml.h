@@ -3,6 +3,8 @@
 
 #include "construct.h"
 
+#include <stdio.h>
+
 void htmlize (Table *table);
 
 #endif /*__LATEXTOHTML_H__*/

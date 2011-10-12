@@ -44,6 +44,17 @@ new_cell (CellKind kind, CellContent content, unsigned int size, FormatKind form
     return cell;
 }
 
+char *
+make_caps (char *string)
+{
+    for (unsigned int i = 0; i < strlen (string); ++i)
+    {
+        if (string[i] >= 'a' && string[i] <= 'z')
+            string[i] += ('A' - 'a');
+    }
+    return string;
+}
+
 void
 free_table (Table *table)
 {

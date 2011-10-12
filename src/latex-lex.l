@@ -67,36 +67,56 @@ STRING {CHAR}{STRINGENDING}?
     return (CLine);
 }
 
-{BLANK}*\\alpha{BLANK}* {
+\\alpha {
     return (Alpha);
 }
 
-{BLANK}*\\Alpha{BLANK}* {
+\\Alpha {
     return (ALPHA);
 }
 
-{BLANK}*\\beta{BLANK}* {
+\\beta {
     return (Beta);
 }
 
-{BLANK}*\\Beta{BLANK}* {
+\\Beta {
     return (BETA);
 }
 
-{BLANK}*\\gamma{BLANK}* {
+\\gamma {
     return (Gamma);
 }
 
-{BLANK}*\\Gamma{BLANK}* {
+\\Gamma {
     return (GAMMA);
 }
 
-{BLANK}*\\delta{BLANK}* {
+\\delta {
     return (Delta);
 }
 
-{BLANK}*\\Delta{BLANK}* {
+\\Delta {
     return (DELTA);
+}
+
+\\textbf{BLANK}* {
+    return (Bold);
+}
+
+\\textit{BLANK}* {
+    return (Italic);
+}
+
+\\textsc{BLANK}* {
+    return (SmallCaps);
+}
+
+\\textrm{BLANK}* {
+    return (Roman);
+}
+
+\\textsf{BLANK}* {
+    return (Serif);
 }
 
 {BLANK}*\\{CHAR}+{BLANK}* {

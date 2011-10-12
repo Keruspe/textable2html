@@ -22,6 +22,7 @@
 %token <string> String Format
 %token Begin End Open Close Tabular TableTok NewLine NewCell HLine CLine MultiColumn Caption LatexDirective
 %token Alpha ALPHA Beta BETA Gamma GAMMA Delta DELTA
+%token Bold Italic SmallCaps Roman Serif
 
 %type <line> Lines
 %type <cell> Line
@@ -31,7 +32,7 @@
 
 %start OUT
 
-%expect 24 /* In Garbage and Text */
+%expect 34 /* In Garbage and Text */
 
 %%
 OUT : Garbage Table {
@@ -154,6 +155,21 @@ Text : String { $$ = $1; }
      | GAMMA  { $$ = strdup ("&Gamma;"); }
      | Delta  { $$ = strdup ("&delta;"); }
      | DELTA  { $$ = strdup ("&Delta;"); }
+     | Bold Open Text Close {
+           char *string = (char *) malloc ((strlen ($3) + 8) * sizeof (char));
+           sprintf (string, "<b>%s</b>", $3);
+           free ($3);
+           $$ = string;
+       }
+     | Italic Open Text Close {
+           char *string = (char *) malloc ((strlen ($3) + 10) * sizeof (char));
+           sprintf (string, "<em>%s</em>", $3);
+           free ($3);
+           $$ = string;
+       }
+     | SmallCaps Open Text Close { $$ = make_caps ($3); }
+     | Roman Open Text Close { $$ = $3; }
+     | Serif Open Text Close { $$ = $3; }
      /* The following rules causes each one 2 shift/reduce warnings */
      | Text String {
            $1 = (char *) realloc ($1, (strlen ($1) + strlen ($2) + 1) * sizeof (char));
@@ -181,6 +197,16 @@ Text : String { $$ = $1; }
            strcat ($1, "&Beta;");
            $$ = $1;
        }
+     | Text Gamma {
+           $1 = (char *) realloc ($1, (strlen ($1) + 8) * sizeof (char));
+           strcat ($1, "&gamma;");
+           $$ = $1;
+       }
+     | Text GAMMA {
+           $1 = (char *) realloc ($1, (strlen ($1) + 8) * sizeof (char));
+           strcat ($1, "&Gamma;");
+           $$ = $1;
+       }
      | Text Delta {
            $1 = (char *) realloc ($1, (strlen ($1) + 8) * sizeof (char));
            strcat ($1, "&delta;");
@@ -191,14 +217,34 @@ Text : String { $$ = $1; }
            strcat ($1, "&Delta;");
            $$ = $1;
        }
-     | Text Gamma {
-           $1 = (char *) realloc ($1, (strlen ($1) + 8) * sizeof (char));
-           strcat ($1, "&gamma;");
+     | Text Bold Open Text Close {
+           char *string = (char *) malloc ((strlen ($1) + strlen ($4) + 8) * sizeof (char));
+           sprintf (string, "%s<b>%s</b>", $1, $4);
+           free ($4);
+           $$ = string;
+       }
+     | Text Italic Open Text Close {
+           char *string = (char *) malloc ((strlen ($1) + strlen ($4) + 10) * sizeof (char));
+           sprintf (string, "%s<em>%s</em>", $1, $4);
+           free ($4);
+           $$ = string;
+       }
+     | Text SmallCaps Open Text Close {
+           $1 = (char *) realloc ($1, (strlen ($1) + strlen ($4) + 1) * sizeof (char));
+           strcat ($1, make_caps ($4));
+           free ($4);
            $$ = $1;
        }
-     | Text GAMMA {
-           $1 = (char *) realloc ($1, (strlen ($1) + 8) * sizeof (char));
-           strcat ($1, "&Gamma;");
+     | Text Roman Open Text Close {
+           $1 = (char *) realloc ($1, (strlen ($1) + strlen ($4) + 1) * sizeof (char));
+           strcat ($1, $4);
+           free ($4);
+           $$ = $1;
+       }
+     | Text Serif Open Text Close {
+           $1 = (char *) realloc ($1, (strlen ($1) + strlen ($4) + 1) * sizeof (char));
+           strcat ($1, $4);
+           free ($4);
            $$ = $1;
        }
      ;

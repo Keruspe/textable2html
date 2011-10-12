@@ -1,7 +1,5 @@
 #include "latextohtml.h"
 
-#include <stdio.h>
-
 const char *input_file;
 bool numbers_only = true;
 
