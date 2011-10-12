@@ -62,7 +62,7 @@ FORMAT [clr|]
     return (Open);
 }
 
-{BLANK}*\}{BLANK}* {
+{BLANK}*\} {
     return (Close);
 }
 
@@ -141,6 +141,7 @@ FORMAT [clr|]
 }
 
 {BLANK}+ {
+    yylval.string = strdup (yytext);
     return (Blank);
 }
 

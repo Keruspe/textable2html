@@ -31,7 +31,7 @@
 
 %start OUT
 
-%expect 67 /* In Garbage and mostly in Text */
+%expect 70 /* In Garbage and mostly in Text */
 
 %%
 OUT : Garbage Table {
@@ -155,6 +155,7 @@ Line : Text {
      ;
 
 Text : String { $$ = $1; }
+     | Blank  { $$ = $1; }
      | Alpha  { $$ = strdup ("&alpha;"); }
      | ALPHA  { $$ = strdup ("&Alpha;"); }
      | Beta   { $$ = strdup ("&beta;");  }
@@ -188,6 +189,12 @@ Text : String { $$ = $1; }
      | Serif Open Text Close { $$ = $3; }
      /* The following rules causes each one 2 shift/reduce warnings */
      | Text String {
+           $1 = (char *) realloc ($1, (strlen ($1) + strlen ($2) + 1) * sizeof (char));
+           strcat ($1, $2);
+           free ($2);
+           $$ = $1;
+       }
+     | Text Blank {
            $1 = (char *) realloc ($1, (strlen ($1) + strlen ($2) + 1) * sizeof (char));
            strcat ($1, $2);
            free ($2);
