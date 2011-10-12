@@ -27,7 +27,7 @@
 %type <cell> Line
 %type <table> Table
 %type <string> Text
-%type <dummy> Garbage BeginTabular EndTabular BeginTable EndTable Horizontal
+%type <dummy> Garbage BeginTabular EndTabular BeginTable EndTable Horizontal BeginDummyRule EndDummyRule
 
 %start OUT
 
@@ -60,6 +60,9 @@ Table : BeginTabular Format Close Lines EndTabular { $$ = new_table ($2, $4, NUL
       | BeginTable BeginTabular Format Close Lines EndTabular EndTable { $$ = new_table ($3, $5, NULL); }
       | BeginTable BeginTabular Format Close Lines EndTabular Caption Open Text Close EndTable { $$ = new_table ($3, $5, $9); }
       | BeginTable Caption Open Text Close BeginTabular Format Close Lines EndTabular EndTable { $$ = new_table ($7, $9, $4); }
+      | BeginTable BeginDummyRule BeginTabular Format Close Lines EndTabular EndDummyRule EndTable { $$ = new_table ($4, $6, NULL); }
+      | BeginTable BeginDummyRule BeginTabular Format Close Lines EndTabular EndDummyRule Caption Open Text Close EndTable { $$ = new_table ($4, $6, $11); }
+      | BeginTable Caption Open Text Close BeginDummyRule BeginTabular Format Close Lines EndTabular EndDummyRule EndTable { $$ = new_table ($8, $10, $4); }
       ;
 
 BeginTabular : Begin Open Tabular Close Open { $$ = NULL; }
@@ -74,6 +77,18 @@ BeginTable : Begin Open TableTok Close { $$ = NULL; }
 
 EndTable : End Open TableTok Close { $$ = NULL; }
          ;
+
+BeginDummyRule : Begin Open Text Close {
+                     free ($3);
+                     $$ = NULL;
+                 }
+               ;
+
+EndDummyRule : End Open Text Close {
+                   free ($3);
+                   $$ = NULL;
+               }
+             ;
 
 Lines : Line { $$ = new_line ($1, NULL); }
       | Line NewLine { $$ = new_line ($1, NULL); }
