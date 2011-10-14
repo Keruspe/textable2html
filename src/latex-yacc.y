@@ -101,7 +101,10 @@ Lines : Line { $$ = new_line ($1, NULL); }
 
 Horizontal : HLine { $$ = NULL; }
            | HLine Open Close { $$ = NULL; }
-           | CLine Open Text Close { $$ = NULL; }
+           | CLine Open Text Close {
+                 free ($3);
+                 $$ = NULL;
+             }
            ;
 
 Line : Text {
@@ -126,23 +129,27 @@ Line : Text {
            CellContent cc = { .string = $9 };
            $$ = new_cell (STRING, cc, atof ($3), $6[0], NULL);
            free ($3);
+           free ($6);
        }
      | MultiColumn Open Number Close Open Format Close Open Text Close NewCell Line {
            CellContent cc = { .string = $9 };
            $$ = new_cell (STRING, cc, atof ($3), $6[0], $12);
            free ($3);
+           free ($6);
        }
      | MultiColumn Open Number Close Open Format Close Open Number Close {
            CellContent cc = { .number = atof ($9) };
-           free ($9);
            $$ = new_cell (NUMBER, cc, atof ($3), $6[0], NULL);
            free ($3);
+           free ($6);
+           free ($9);
        }
      | MultiColumn Open Number Close Open Format Close Open Number Close NewCell Line {
            CellContent cc = { .number = atof ($9) };
-           free ($9);
            $$ = new_cell (NUMBER, cc, atof ($3), $6[0], $12);
            free ($3);
+           free ($6);
+           free ($9);
        }
      | NewCell {
            CellContent cc = { .string = strdup ("") /* Since we always free it */ };
