@@ -6,8 +6,8 @@ int nb_line = 1;
 
 extern FILE * yyin;
 
-extern int yylex_destroy ();
-extern int yyparse ();
+int yylex_destroy ();
+int yyparse ();
 
 void
 htmlize (Table *table)

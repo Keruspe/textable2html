@@ -1,8 +1,8 @@
 %{
     #include "latextohtml.h"
 
-    extern int yylex ();
-    extern void yyerror (char *error);
+    int yylex ();
+    void yyerror (char *error);
 %}
 
 %union {
@@ -16,7 +16,8 @@
 }
 
 %token <string> String Number Format Blank
-%token Begin End Open Close Tabular TableTok NewLine NewCell HLine CLine MultiColumn Caption LatexDirective
+%token Begin End Open Close Tabular TableTok
+%token NewLine NewCell HLine CLine MultiColumn Caption LatexDirective
 %token Alpha ALPHA Beta BETA Gamma GAMMA Delta DELTA
 %token Bold Italic SmallCaps Roman Serif
 
