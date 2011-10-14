@@ -72,7 +72,10 @@ EndTabular : End Open Tabular Close { $$ = NULL; }
            ;
 
 BeginTable : Begin Open TableTok Close { $$ = NULL; }
-           | Begin Open TableTok Close Text { $$ = NULL; }
+           | Begin Open TableTok Close Text {
+                 free ($5);
+                 $$ = NULL;
+             }
            ;
 
 EndTable : End Open TableTok Close { $$ = NULL; }
