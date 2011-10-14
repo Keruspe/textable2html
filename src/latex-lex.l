@@ -55,7 +55,7 @@ FORMAT [clr|]
 }
 
 {BLANK}*\\caption{BLANK}* {
-    return (Caption);
+    return (CaptionTok);
 }
 
 {BLANK}*\{{BLANK}* {
