@@ -3,9 +3,6 @@
 
     extern int yylex ();
     extern void yyerror (char *error);
-
-    extern const char *input_file;
-    extern bool numbers_only;
 %}
 
 %union {
