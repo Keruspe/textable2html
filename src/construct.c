@@ -3,7 +3,7 @@
 extern bool numbers_only;
 
 Table *
-new_table (char *format, Line *lines, char *caption)
+new_table (char *format, Line *lines, char *caption, bool caption_on_top)
 {
     Table *table = (Table *) malloc (sizeof (Table));
     table->format = format;
@@ -18,6 +18,7 @@ new_table (char *format, Line *lines, char *caption)
     table->borders = (nb_separator > (nb_cell / 2));
     table->nb_cell = nb_cell;
     table->caption = caption;
+    table->caption_on_top = caption_on_top;
     return table;
 }
 

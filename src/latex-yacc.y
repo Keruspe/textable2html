@@ -56,13 +56,13 @@ OUT : Garbage Table {
       }
     ;
 
-Table : BeginTabular Format Close Lines EndTabular { $$ = new_table ($2, $4, NULL); }
-      | BeginTable BeginTabular Format Close Lines EndTabular EndTable { $$ = new_table ($3, $5, NULL); }
-      | BeginTable BeginTabular Format Close Lines EndTabular Caption Open Text Close EndTable { $$ = new_table ($3, $5, $9); }
-      | BeginTable Caption Open Text Close BeginTabular Format Close Lines EndTabular EndTable { $$ = new_table ($7, $9, $4); }
-      | BeginTable BeginDummyRule BeginTabular Format Close Lines EndTabular EndDummyRule EndTable { $$ = new_table ($4, $6, NULL); }
-      | BeginTable BeginDummyRule BeginTabular Format Close Lines EndTabular EndDummyRule Caption Open Text Close EndTable { $$ = new_table ($4, $6, $11); }
-      | BeginTable Caption Open Text Close BeginDummyRule BeginTabular Format Close Lines EndTabular EndDummyRule EndTable { $$ = new_table ($8, $10, $4); }
+Table : BeginTabular Format Close Lines EndTabular { $$ = new_table ($2, $4, NULL, false); }
+      | BeginTable BeginTabular Format Close Lines EndTabular EndTable { $$ = new_table ($3, $5, NULL, false); }
+      | BeginTable BeginTabular Format Close Lines EndTabular Caption Open Text Close EndTable { $$ = new_table ($3, $5, $9, false); }
+      | BeginTable Caption Open Text Close BeginTabular Format Close Lines EndTabular EndTable { $$ = new_table ($7, $9, $4, true); }
+      | BeginTable BeginDummyRule BeginTabular Format Close Lines EndTabular EndDummyRule EndTable { $$ = new_table ($4, $6, NULL, false); }
+      | BeginTable BeginDummyRule BeginTabular Format Close Lines EndTabular EndDummyRule Caption Open Text Close EndTable { $$ = new_table ($4, $6, $11, false); }
+      | BeginTable Caption Open Text Close BeginDummyRule BeginTabular Format Close Lines EndTabular EndDummyRule EndTable { $$ = new_table ($8, $10, $4, true); }
       ;
 
 BeginTabular : Begin Open Tabular Close Open { $$ = NULL; }

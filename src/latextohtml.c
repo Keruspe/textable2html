@@ -74,7 +74,7 @@ htmlize (Table *table)
     }
     fprintf (out,
             "            <table>\n");
-    if (table->caption)
+    if (table->caption_on_top && table->caption)
         fprintf (out,
             "                <caption>%s</caption>\n", table->caption);
     while (line) {
@@ -155,9 +155,11 @@ htmlize (Table *table)
         fprintf (out,
                 "                </tr>\n");
     }
+    if (!table->caption_on_top && table->caption)
+        fprintf (out,
+            "                <caption>%s</caption>\n", table->caption);
     fprintf (out,
-            "            </table>\n");
-    fprintf (out,
+            "            </table>\n"
             "        </div>\n"
             "    </body>\n"
             "</html>\n");
