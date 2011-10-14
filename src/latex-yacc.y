@@ -189,8 +189,8 @@ Text : String { $$ = $1; }
            $$ = string;
        }
      | Italic Open Text Close {
-           char *string = (char *) malloc ((strlen ($3) + 10) * sizeof (char));
-           sprintf (string, "<em>%s</em>", $3);
+           char *string = (char *) malloc ((strlen ($3) + 8) * sizeof (char));
+           sprintf (string, "<i>%s</i>", $3);
            free ($3);
            $$ = string;
        }
@@ -297,8 +297,8 @@ Text : String { $$ = $1; }
            $$ = string;
        }
      | Text Italic Open Text Close {
-           char *string = (char *) malloc ((strlen ($1) + strlen ($4) + 10) * sizeof (char));
-           sprintf (string, "%s<em>%s</em>", $1, $4);
+           char *string = (char *) malloc ((strlen ($1) + strlen ($4) + 8) * sizeof (char));
+           sprintf (string, "%s<i>%s</i>", $1, $4);
            free ($4);
            $$ = string;
        }
