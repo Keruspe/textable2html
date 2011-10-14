@@ -180,10 +180,8 @@ main(int argc, char *argv[])
         yyerror ("bad invocation");
     }
     input_file = argv[1];
-    FILE *in = fopen (input_file, "r");
-    yyin = in;
+    yyin = fopen (input_file, "r");
     yyparse ();
-    fclose (in);
     yylex_destroy ();
     return 0;
 }
