@@ -1,4 +1,6 @@
-#include "latextohtml.h"
+#include "construct.h"
+
+#include <stdio.h>
 
 const char *input_file;
 bool numbers_only = true;

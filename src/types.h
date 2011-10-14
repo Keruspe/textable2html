@@ -3,6 +3,10 @@
 
 #include <stdbool.h>
 
+typedef struct _Cell Cell;
+typedef struct _Line Line;
+typedef struct _Table Table;
+
 typedef enum {
     CENTER = 'c',
     LEFT = 'l',
@@ -20,26 +24,26 @@ typedef union {
     float number;
 } CellContent;
 
-typedef struct Cell {
+struct _Cell {
     CellKind kind;
     CellContent content;
     unsigned int size;
     FormatKind special_format;
-    struct Cell *next;
-} Cell;
+    Cell *next;
+};
 
-typedef struct Line {
+struct _Line {
     Cell *cells;
-    struct Line *next;
-} Line;
+    Line *next;
+};
 
-typedef struct Table {
+struct _Table {
     char *format;
     Line *lines;
     bool borders;
     unsigned int nb_cell;
     char *caption;
-} Table;
+};
 
 #endif /*__TYPES_H__*/
 

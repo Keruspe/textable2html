@@ -1,5 +1,7 @@
 #include "construct.h"
 
+#include <stdio.h>
+
 extern bool numbers_only;
 
 Table *

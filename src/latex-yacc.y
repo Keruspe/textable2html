@@ -9,9 +9,9 @@
     float number;
     char character;
     char *string;
-    struct Line *line;
-    struct Cell *cell;
-    struct Table *table;
+    struct _Line *line;
+    struct _Cell *cell;
+    struct _Table *table;
     void *dummy;
 }
 
