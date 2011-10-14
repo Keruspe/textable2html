@@ -142,6 +142,7 @@ htmlize (Table *table)
                 "                </tr>\n");
         line = line->next;
     }
+    free_table (table);
     if (numbers_only) {
         fprintf (out,
                 "                <tr>\n");

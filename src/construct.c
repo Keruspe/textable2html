@@ -55,6 +55,37 @@ make_caps (char *string)
     return string;
 }
 
+char *
+surround_with (char *string, const char *tag)
+{
+    char *result = (char *) malloc ((strlen (string) + 2 * strlen (tag) + 6) * sizeof (char));
+    sprintf (result, "<%s>%s</%s>", tag, string, tag);
+    free (string);
+    return result;
+}
+
+static char *
+append_internal (char *string, char *other, bool other_needs_free)
+{
+    string = (char *) realloc (string, (strlen (string) + strlen (other) + 1) * sizeof (char));
+    strcat (string, other);
+    if (other_needs_free)
+        free (other);
+    return string;
+}
+
+char *
+append (char *string, char *other)
+{
+    return append_internal (string, other, true);
+}
+
+char *
+append_const (char *string, const char *other)
+{
+    return append_internal (string, (char *) other, false);
+}
+
 void
 free_table (Table *table)
 {
