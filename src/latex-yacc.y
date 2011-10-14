@@ -85,17 +85,12 @@ BeginDummyRule : Begin DummyText { $$ = NULL; }
 EndDummyRule : End DummyText { $$ = NULL; }
              ;
 
-DummyText : Open Text Close {
-                $$ = NULL;
-                free ($2);
-            }
-
 Lines : Line               { $$ = new_line ($1, NULL); }
       | Line NewLine       { $$ = new_line ($1, NULL); }
       | Line NewLine Lines { $$ = new_line ($1, $3);   }
       | Horizontal               { $$ = NULL; }
-      | Horizontal NewLine       { $$ = NULL; }
       | Horizontal Lines         { $$ = $2;   }
+      | Horizontal NewLine       { $$ = NULL; }
       | Horizontal NewLine Lines { $$ = $3;   }
       ;
 
@@ -103,6 +98,11 @@ Horizontal : HLine            { $$ = NULL; }
            | HLine Open Close { $$ = NULL; }
            | CLine DummyText  { $$ = NULL; }
            ;
+
+DummyText : Open Text Close {
+                $$ = NULL;
+                free ($2);
+            }
 
 Line : Text {
            CellContent cc = { .string = $1 };
@@ -176,11 +176,11 @@ Text : String { $$ = $1; }
      | GAMMA Open Close { $$ = strdup ("&Gamma;"); }
      | Delta Open Close { $$ = strdup ("&delta;"); }
      | DELTA Open Close { $$ = strdup ("&Delta;"); }
-     | Bold Open Text Close      { $$ = surround_with ($3, "b"); }
-     | Italic Open Text Close    { $$ = surround_with ($3, "i"); }
+     | Bold      Open Text Close { $$ = surround_with ($3, "b"); }
+     | Italic    Open Text Close { $$ = surround_with ($3, "i"); }
      | SmallCaps Open Text Close { $$ = make_caps ($3); }
-     | Roman Open Text Close { $$ = $3; }
-     | Serif Open Text Close { $$ = $3; }
+     | Roman     Open Text Close { $$ = $3; }
+     | Serif     Open Text Close { $$ = $3; }
      /* The following rules causes each one 2 shift/reduce warnings */
      | Text String { $$ = append ($1, $2); }
      | Text Blank  { $$ = append ($1, $2); }
@@ -194,17 +194,17 @@ Text : String { $$ = $1; }
      | Text DELTA  { $$ = append_const ($1, "&Delta;"); }
      | Text Alpha Open Close { $$ = append_const ($1, "&alpha;"); }
      | Text ALPHA Open Close { $$ = append_const ($1, "&Alpha;"); }
-     | Text Beta Open Close  { $$ = append_const ($1, "&beta;");  }
-     | Text BETA Open Close  { $$ = append_const ($1, "&Beta;");  }
+     | Text Beta  Open Close { $$ = append_const ($1, "&beta;");  }
+     | Text BETA  Open Close { $$ = append_const ($1, "&Beta;");  }
      | Text Gamma Open Close { $$ = append_const ($1, "&gamma;"); }
      | Text GAMMA Open Close { $$ = append_const ($1, "&Gamma;"); }
      | Text Delta Open Close { $$ = append_const ($1, "&delta;"); }
      | Text DELTA Open Close { $$ = append_const ($1, "&Delta;"); }
-     | Text Bold Open Text Close      { $$ = append ($1, surround_with ($4, "b")); }
-     | Text Italic Open Text Close    { $$ = append ($1, surround_with ($4, "i")); }
+     | Text Bold      Open Text Close { $$ = append ($1, surround_with ($4, "b")); }
+     | Text Italic    Open Text Close { $$ = append ($1, surround_with ($4, "i")); }
      | Text SmallCaps Open Text Close { $$ = append ($1, make_caps ($4)); }
-     | Text Roman Open Text Close { $$ = append ($1, $4); }
-     | Text Serif Open Text Close { $$ = append ($1, $4); }
+     | Text Roman     Open Text Close { $$ = append ($1, $4); }
+     | Text Serif     Open Text Close { $$ = append ($1, $4); }
      /* There can be a number in the middle of a Text. the second rule causes 17 shift/reduce warnings */
      | Text Number { $$ = append ($1, $2); }
      | Number Text { $$ = append ($1, $2); }
