@@ -39,7 +39,6 @@ typedef struct Table {
     bool borders;
     unsigned int nb_cell;
     char *caption;
-    bool caption_on_top;
 } Table;
 
 #endif /*__TYPES_H__*/
