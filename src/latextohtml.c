@@ -42,25 +42,25 @@ htmlize (Table *table)
     for (unsigned int i = 0, j = 0; i < strlen (table->format); ++i) {
         char *align;
         switch (table->format[i]) {
-        case SEPARATOR:
-            continue;
         case CENTER:
-            align = "center";
+            align = "center;";
             break;
         case LEFT:
-            align = "left";
+            align = "left;  ";
             break;
         case RIGHT:
-            align = "right";
+            align = "right; ";
             break;
+        default:
+            continue;
         }
         fprintf (out,
                 "            .col%u { text-align: %s }\n", j++, align);
     }
     fprintf (out,
             "            .center { text-align: center; }\n"
-            "            .left { text-align: left; }\n"
-            "            .right { text-align: right; }\n"
+            "            .left   { text-align: left;   }\n"
+            "            .right  { text-align: right;  }\n"
             "        </style>\n"
             "    </head>\n"
             "    <body>\n"
