@@ -6,11 +6,9 @@ const char *input_file;
 bool numbers_only = true;
 int nb_line = 1;
 
-extern FILE *yyin;
-
 int yylex_destroy ();
 int yyparse ();
-void yyrestart (FILE *input_file);
+void yyset_in (FILE *in_str);
 
 void
 htmlize (Table *table)
@@ -183,10 +181,11 @@ main(int argc, char *argv[])
         yyerror ("bad invocation");
     }
     input_file = argv[1];
-    yyin = fopen (input_file, "r");
+    FILE *in = fopen (input_file, "r");
+    yyset_in (in);
     yyparse ();
     yylex_destroy ();
-    yyrestart (NULL);
+    fclose (in);
     return 0;
 }
 
