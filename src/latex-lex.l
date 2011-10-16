@@ -132,12 +132,12 @@ FORMAT [clr|]
 
 {DIGIT}+ {
     yylval.string = strdup (yytext);
-    return (Integer);
+    return (IntegerTok);
 }
 
 {NUMBER} {
     yylval.string = strdup (yytext);
-    return (Number);
+    return (NumberTok);
 }
 
 {STRING} {

@@ -13,7 +13,20 @@ void yyset_in (FILE *in_str);
 void
 htmlize (Table *table)
 {
-    const char *number_format = (numbers_state == INTEGERS_ONLY ? "%d" : "%f");
+    const char *number_format;
+    switch (numbers_state)
+    {
+    case INTEGERS_ONLY:
+        number_format = "%d";
+        break;
+    case NUMBERS_AND_INTEGERS:
+        number_format = "%f";
+        break;
+    default:
+        /* nothing to do but silence warning */
+        number_format = "";
+        break;
+    }
     char *output_file = (char *) malloc ((strlen (input_file) + 2) * sizeof (char));
     sprintf (output_file, "%s", input_file);
     memcpy (output_file + strlen (input_file) - 3, "html", 5);

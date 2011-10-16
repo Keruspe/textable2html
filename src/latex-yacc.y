@@ -10,11 +10,13 @@
     struct _Cell  *cell;
     struct _Table *table;
     int   integer;
+    float number;
+    char  character;
     char *string;
     void *dummy;
 }
 
-%token <string> String Number Integer Format Blank
+%token <string> String NumberTok IntegerTok Format Blank
 %token Begin End Open Close Tabular TableTok
 %token NewLine NewCell HLine CLine MultiColumnTok CaptionTok LatexDirective
 %token Alpha ALPHA Beta BETA Gamma GAMMA Delta DELTA
@@ -23,14 +25,16 @@
 %type <line> Lines
 %type <cell> Line
 %type <table> Table GarbageLessTable
-%type <integer> MultiColumn
+%type <integer> MultiColumn Integer
+%type <number> Number
+%type <character> SimpleFormat
 %type <string> Text Caption
 %type <dummy> Garbage BeginTabular EndTabular BeginTable EndTable Horizontal
 %type <dummy> BeginDummyRule EndDummyRule DummyText
 
 %start OUT
 
-%expect 168 /* In Garbage and mostly in Text */
+%expect 134 /* In Garbage and mostly in Text */
 
 %%
 OUT: GarbageLessTable {
@@ -106,58 +110,44 @@ Line : Text {
            $$ = new_cell (STRING, cc, 1, '\0', $3);
        }
      | Number {
-           CellContent cc = { .number = atof ($1) };
+           CellContent cc = { .number = $1 };
            $$ = new_cell (NUMBER, cc, 1, '\0', NULL);
-           free ($1);
        }
      | Number NewCell Line {
-           CellContent cc = { .number = atof ($1) };
+           CellContent cc = { .number = $1 };
            $$ = new_cell (NUMBER, cc, 1, '\0', $3);
-           free ($1);
        }
      | Integer {
-           CellContent cc = { .integer = atoi ($1) };
+           CellContent cc = { .integer = $1 };
            $$ = new_cell (INTEGER, cc, 1, '\0', NULL);
-           free ($1);
        }
      | Integer NewCell Line {
-           CellContent cc = { .integer = atoi ($1) };
+           CellContent cc = { .integer = $1 };
            $$ = new_cell (INTEGER, cc, 1, '\0', $3);
-           free ($1);
        }
-     | MultiColumn Format Close Open Text Close {
+     | MultiColumn SimpleFormat Close Open Text Close {
            CellContent cc = { .string = $5 };
-           $$ = new_cell (STRING, cc, $1, $2[0], NULL);
-           free ($2);
+           $$ = new_cell (STRING, cc, $1, $2, NULL);
        }
-     | MultiColumn Format Close Open Text Close NewCell Line {
+     | MultiColumn SimpleFormat Close Open Text Close NewCell Line {
            CellContent cc = { .string = $5 };
-           $$ = new_cell (STRING, cc, $1, $2[0], $8);
-           free ($2);
+           $$ = new_cell (STRING, cc, $1, $2, $8);
        }
-     | MultiColumn Format Close Open Number Close {
-           CellContent cc = { .number = atof ($5) };
-           $$ = new_cell (NUMBER, cc, $1, $2[0], NULL);
-           free ($2);
-           free ($5);
+     | MultiColumn SimpleFormat Close Open Number Close {
+           CellContent cc = { .number = $5 };
+           $$ = new_cell (NUMBER, cc, $1, $2, NULL);
        }
-     | MultiColumn Format Close Open Number Close NewCell Line {
-           CellContent cc = { .number = atof ($5) };
-           $$ = new_cell (NUMBER, cc, $1, $2[0], $8);
-           free ($2);
-           free ($5);
+     | MultiColumn SimpleFormat Close Open Number Close NewCell Line {
+           CellContent cc = { .number = $5 };
+           $$ = new_cell (NUMBER, cc, $1, $2, $8);
        }
-     | MultiColumn Format Close Open Integer Close {
-           CellContent cc = { .integer = atoi ($5) };
-           $$ = new_cell (INTEGER, cc, $1, $2[0], NULL);
-           free ($2);
-           free ($5);
+     | MultiColumn SimpleFormat Close Open Integer Close {
+           CellContent cc = { .integer = $5 };
+           $$ = new_cell (INTEGER, cc, $1, $2, NULL);
        }
-     | MultiColumn Format Close Open Integer Close NewCell Line {
-           CellContent cc = { .integer = atoi ($5) };
-           $$ = new_cell (INTEGER, cc, $1, $2[0], $8);
-           free ($2);
-           free ($5);
+     | MultiColumn SimpleFormat Close Open Integer Close NewCell Line {
+           CellContent cc = { .integer = $5 };
+           $$ = new_cell (INTEGER, cc, $1, $2, $8);
        }
      | NewCell {
            CellContent cc = { .string = strdup ("") /* Since we always free it */ };
@@ -169,10 +159,13 @@ Line : Text {
        }
      ;
 
-MultiColumn : MultiColumnTok Open Integer Close Open {
-                  $$ = atoi ($3);
-                  free ($3);
-              }
+SimpleFormat : Format {
+                   $$ = $1[0];
+                   free ($1);
+               }
+             ;
+
+MultiColumn : MultiColumnTok Open Integer Close Open { $$ = $3; }
             ;
 
 Text : String { $$ = $1; }
@@ -223,11 +216,11 @@ Text : String { $$ = $1; }
      | Text Roman     Open Text Close { $$ = append ($1, $4); }
      | Text Serif     Open Text Close { $$ = append ($1, $4); }
      /* There can be a number in the middle of a Text. the second rule causes 17 shift/reduce warnings */
-     | Text Number { $$ = append ($1, $2); }
-     | Number Text { $$ = append ($1, $2); }
+     | Text NumberTok { $$ = append ($1, $2); }
+     | NumberTok Text { $$ = append ($1, $2); }
      /* There can be an integer in the middle of a Text. the second rule causes 19 shift/reduce warnings */
-     | Text Integer { $$ = append ($1, $2); }
-     | Integer Text { $$ = append ($1, $2); }
+     | Text IntegerTok { $$ = append ($1, $2); }
+     | IntegerTok Text { $$ = append ($1, $2); }
      ;
 
 Garbage : Text {
@@ -239,14 +232,8 @@ Garbage : Text {
               free ($1);
           }
         /* The two following rules causes 17 shift/reduce warnings each */
-        | Number {
-              $$ = NULL;
-              free ($1);
-          }
-        | Integer {
-              $$ = NULL;
-              free ($1);
-          }
+        | Number     { $$ = NULL; }
+        | Integer    { $$ = NULL; }
         | NewLine    { $$ = NULL; }
         | NewCell    { $$ = NULL; }
         | Begin      { $$ = NULL; }
@@ -276,19 +263,12 @@ Garbage : Text {
               $$ = NULL;
               free ($2);
           }
-        /* The two following rules causes 17 shift/reduce warnings each */
-        | Garbage Number {
-              $$ = NULL;
-              free ($2);
-          }
-        | Garbage Integer {
-              $$ = NULL;
-              free ($2);
-          }
-        | Garbage NewLine { $$ = NULL; }
-        | Garbage NewCell { $$ = NULL; }
-        | Garbage Begin   { $$ = NULL; }
-        | Garbage End     { $$ = NULL; }
+        | Garbage Number     { $$ = NULL; }
+        | Garbage Integer    { $$ = NULL; }
+        | Garbage NewLine    { $$ = NULL; }
+        | Garbage NewCell    { $$ = NULL; }
+        | Garbage Begin      { $$ = NULL; }
+        | Garbage End        { $$ = NULL; }
         /* The two following rules cause shift/reduce warnings... */
         | Garbage Open       { $$ = NULL; }
         | Garbage Close      { $$ = NULL; }
@@ -308,5 +288,17 @@ Garbage : Text {
         | Garbage BeginDummyRule { $$ = NULL; }
         | Garbage EndDummyRule   { $$ = NULL; }
         ;
+
+Integer : IntegerTok {
+              $$ = atoi ($1);
+              free ($1);
+          }
+        ;
+
+Number : NumberTok {
+             $$ = atof ($1);
+             free ($1);
+         }
+       ;
 %%
 
