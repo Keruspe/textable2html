@@ -101,62 +101,20 @@ DummyText : Open Text Close {
                 free ($2);
             }
 
-Line : Text {
-           CellContent cc = { .string = $1 };
-           $$ = new_cell (STRING, cc, 1, '\0', NULL);
-       }
-     | Text NewCell Line {
-           CellContent cc = { .string = $1 };
-           $$ = new_cell (STRING, cc, 1, '\0', $3);
-       }
-     | Number {
-           CellContent cc = { .number = $1 };
-           $$ = new_cell (NUMBER, cc, 1, '\0', NULL);
-       }
-     | Number NewCell Line {
-           CellContent cc = { .number = $1 };
-           $$ = new_cell (NUMBER, cc, 1, '\0', $3);
-       }
-     | Integer {
-           CellContent cc = { .integer = $1 };
-           $$ = new_cell (INTEGER, cc, 1, '\0', NULL);
-       }
-     | Integer NewCell Line {
-           CellContent cc = { .integer = $1 };
-           $$ = new_cell (INTEGER, cc, 1, '\0', $3);
-       }
-     | MultiColumn SimpleFormat Close Open Text Close {
-           CellContent cc = { .string = $5 };
-           $$ = new_cell (STRING, cc, $1, $2, NULL);
-       }
-     | MultiColumn SimpleFormat Close Open Text Close NewCell Line {
-           CellContent cc = { .string = $5 };
-           $$ = new_cell (STRING, cc, $1, $2, $8);
-       }
-     | MultiColumn SimpleFormat Close Open Number Close {
-           CellContent cc = { .number = $5 };
-           $$ = new_cell (NUMBER, cc, $1, $2, NULL);
-       }
-     | MultiColumn SimpleFormat Close Open Number Close NewCell Line {
-           CellContent cc = { .number = $5 };
-           $$ = new_cell (NUMBER, cc, $1, $2, $8);
-       }
-     | MultiColumn SimpleFormat Close Open Integer Close {
-           CellContent cc = { .integer = $5 };
-           $$ = new_cell (INTEGER, cc, $1, $2, NULL);
-       }
-     | MultiColumn SimpleFormat Close Open Integer Close NewCell Line {
-           CellContent cc = { .integer = $5 };
-           $$ = new_cell (INTEGER, cc, $1, $2, $8);
-       }
-     | NewCell {
-           CellContent cc = { .string = strdup ("") /* Since we always free it */ };
-           $$ = new_cell (STRING, cc, 1, '\0', NULL);
-       }
-     | NewCell Line {
-           CellContent cc = { .string = strdup ("") /* Since we always free it */ };
-           $$ = new_cell (STRING, cc, 1, '\0', $2);
-       }
+Line : Text                 { $$ = new_string_cell ($1, 1, '\0', NULL);  }
+     | Text NewCell Line    { $$ = new_string_cell ($1, 1, '\0', $3);    }
+     | Number               { $$ = new_number_cell ($1, 1, '\0', NULL);  }
+     | Number NewCell Line  { $$ = new_number_cell ($1, 1, '\0', $3);    }
+     | Integer              { $$ = new_integer_cell ($1, 1, '\0', NULL); }
+     | Integer NewCell Line { $$ = new_integer_cell ($1, 1, '\0', $3);   }
+     | MultiColumn SimpleFormat Close Open Text Close                 { $$ = new_string_cell ($5, $1, $2, NULL);  }
+     | MultiColumn SimpleFormat Close Open Text Close NewCell Line    { $$ = new_string_cell ($5, $1, $2, $8);    }
+     | MultiColumn SimpleFormat Close Open Number Close               { $$ = new_number_cell ($5, $1, $2, NULL);  }
+     | MultiColumn SimpleFormat Close Open Number Close NewCell Line  { $$ = new_number_cell ($5, $1, $2, $8);    }
+     | MultiColumn SimpleFormat Close Open Integer Close              { $$ = new_integer_cell ($5, $1, $2, NULL); }
+     | MultiColumn SimpleFormat Close Open Integer Close NewCell Line { $$ = new_integer_cell ($5, $1, $2, $8);   }
+     | NewCell      { $$ = new_string_cell (strdup (""), 1, '\0', NULL); }
+     | NewCell Line { $$ = new_string_cell (strdup (""), 1, '\0', $2);   }
      ;
 
 SimpleFormat : Format {

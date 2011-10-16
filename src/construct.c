@@ -32,7 +32,7 @@ new_line (Cell *cells, Line *next)
     return line;
 }
 
-Cell *
+static Cell *
 new_cell (CellKind kind, CellContent content, unsigned int size, FormatKind format, Cell *next)
 {
     Cell *cell = (Cell *) malloc (sizeof (Cell));
@@ -55,6 +55,27 @@ new_cell (CellKind kind, CellContent content, unsigned int size, FormatKind form
         break;
     }
     return cell;
+}
+
+Cell *
+new_integer_cell (int value, unsigned int size, FormatKind format, Cell *next)
+{
+    CellContent content = { .integer = value };
+    return new_cell (INTEGER, content, size, format, next);
+}
+
+Cell *
+new_number_cell (float value, unsigned int size, FormatKind format, Cell *next)
+{
+    CellContent content = { .number = value };
+    return new_cell (NUMBER, content, size, format, next);
+}
+
+Cell *
+new_string_cell (char *value, unsigned int size, FormatKind format, Cell *next)
+{
+    CellContent content = { .string = value };
+    return new_cell (STRING, content, size, format, next);
 }
 
 char *

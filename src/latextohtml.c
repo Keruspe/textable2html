@@ -85,18 +85,12 @@ htmlize (Table *table)
     switch (numbers_state)
     {
     case INTEGERS_ONLY:
-        {
-            CellContent content = { .integer = 0 };
-            for (unsigned int i = 0; i <= table->nb_cell; ++i)
-                totals = new_cell (INTEGER, content, 1, '\0', totals);
-        }
+        for (unsigned int i = 0; i <= table->nb_cell; ++i)
+            totals = new_integer_cell (0, 1, '\0', totals);
         break;
     case NUMBERS_AND_INTEGERS:
-        {
-            CellContent content = { .number = 0 };
-            for (unsigned int i = 0; i <= table->nb_cell; ++i)
-                totals = new_cell (NUMBER, content, 1, '\0', totals);
-        }
+        for (unsigned int i = 0; i <= table->nb_cell; ++i)
+            totals = new_number_cell (0, 1, '\0', totals);
         break;
     default:
         /* nothing to do */

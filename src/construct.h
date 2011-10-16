@@ -13,11 +13,20 @@ Table *new_table (char *format,
 Line *new_line (Cell *cells,
                 Line *next);
 
-Cell *new_cell (CellKind     kind,
-                CellContent  content,
-                unsigned int size,
-                FormatKind   format,
-                Cell        *next);
+Cell *new_integer_cell (int          value,
+                        unsigned int size,
+                        FormatKind   format,
+                        Cell        *next);
+
+Cell *new_number_cell (float        value,
+                       unsigned int size,
+                       FormatKind   format,
+                       Cell        *next);
+
+Cell *new_string_cell (char        *value,
+                       unsigned int size,
+                       FormatKind   format,
+                       Cell        *next);
 
 char *make_caps (char *string);
 
