@@ -22,7 +22,7 @@
 
 %type <line> Lines
 %type <cell> Line
-%type <table> Table
+%type <table> Table GarbageLessTable
 %type <integer> MultiColumn
 %type <string> Text Caption
 %type <dummy> Garbage BeginTabular EndTabular BeginTable EndTable Horizontal
@@ -33,25 +33,18 @@
 %expect 168 /* In Garbage and mostly in Text */
 
 %%
-OUT : Garbage Table {
-            htmlize ($2);
-            exit (0);
-      }
-    | Table Garbage {
-            htmlize ($1);
-            exit (0);
-      }
-    | Garbage Table Garbage {
-            htmlize ($2);
-            exit (0);
-      }
-    | Table {
-            htmlize ($1);
-            exit (0);
-      }
-    ;
+OUT: GarbageLessTable {
+         htmlize ($1);
+         exit (0);
+     }
 
-Table : BeginTabular Format Close Lines EndTabular                             { $$ = new_table ($2, $4, NULL); }
+GarbageLessTable :         Table         { $$ = $1; }
+                 |         Table Garbage { $$ = $1; }
+                 | Garbage Table         { $$ = $2; }
+                 | Garbage Table Garbage { $$ = $2; }
+                 ;
+
+Table :            BeginTabular Format Close Lines EndTabular                  { $$ = new_table ($2, $4, NULL); }
       | BeginTable BeginTabular Format Close Lines EndTabular EndTable         { $$ = new_table ($3, $5, NULL); }
       | BeginTable BeginTabular Format Close Lines EndTabular Caption EndTable { $$ = new_table ($3, $5, $7);   }
       | BeginTable Caption BeginTabular Format Close Lines EndTabular EndTable { $$ = new_table ($4, $6, $2);   }
