@@ -51,7 +51,7 @@ FORMAT [clr|]
 }
 
 {BLANK}*\\multicolumn{BLANK}* {
-    return (MultiColumn);
+    return (MultiColumnTok);
 }
 
 {BLANK}*\\caption{BLANK}* {
@@ -128,6 +128,11 @@ FORMAT [clr|]
 
 \\{CHAR}+ {
     return (LatexDirective);
+}
+
+{DIGIT}+ {
+    yylval.string = strdup (yytext);
+    return (Integer);
 }
 
 {NUMBER} {
