@@ -6,8 +6,8 @@
 %}
 
 %union {
-    struct _Line  *line;
-    struct _Cell  *cell;
+    struct _Line  *lines;
+    struct _Cell  *cells;
     struct _Table *table;
     int   integer;
     float number;
@@ -22,8 +22,8 @@
 %token Alpha ALPHA Beta BETA Gamma GAMMA Delta DELTA
 %token Bold Italic SmallCaps Roman Serif
 
-%type <line> Lines
-%type <cell> Line
+%type <lines> Lines
+%type <cells> Line
 %type <table> Table GarbageLessTable
 %type <integer> MultiColumn Integer
 %type <number> Number
@@ -34,20 +34,23 @@
 
 %start OUT
 
-%expect 134 /* In Garbage and mostly in Text */
+%expect 117 /* In Garbage and mostly in Text */
 
 %%
 OUT: GarbageLessTable {
+         /* Generate html and exit */
          htmlize ($1);
          exit (0);
      }
 
+/* This is to ignore the garbage before and after the table */
 GarbageLessTable :         Table         { $$ = $1; }
                  |         Table Garbage { $$ = $1; }
                  | Garbage Table         { $$ = $2; }
                  | Garbage Table Garbage { $$ = $2; }
                  ;
 
+/* A table can either be a tabular, or a tabular in a table or a tabular in something like a center block, and there can be a caption in it */
 Table :            BeginTabular Format Close Lines EndTabular                  { $$ = new_table ($2, $4, NULL); }
       | BeginTable BeginTabular Format Close Lines EndTabular EndTable         { $$ = new_table ($3, $5, NULL); }
       | BeginTable BeginTabular Format Close Lines EndTabular Caption EndTable { $$ = new_table ($3, $5, $7);   }
@@ -57,8 +60,14 @@ Table :            BeginTabular Format Close Lines EndTabular                  {
       | BeginTable Caption BeginDummyRule BeginTabular Format Close Lines EndTabular EndDummyRule EndTable { $$ = new_table ($5, $7, $2);   }
       ;
 
-Caption : CaptionTok Open Text Close { $$ = $3; }
-        ;
+/* A table opening can be followed by stuff like [c], just ignore it */
+BeginTable : Begin Open TableTok Close           { $$ = NULL; }
+           | Begin Open TableTok Close DummyText { $$ = NULL; }
+           ;
+
+/* The following rules are separated rules for readability concerns */
+BeginDummyRule : Begin Open DummyText Close { $$ = NULL; }
+               ;
 
 BeginTabular : Begin Open Tabular Close Open { $$ = NULL; }
              ;
@@ -66,22 +75,21 @@ BeginTabular : Begin Open Tabular Close Open { $$ = NULL; }
 EndTabular : End Open Tabular Close { $$ = NULL; }
            ;
 
-BeginTable : Begin Open TableTok Close { $$ = NULL; }
-           | Begin Open TableTok Close Text {
-                 $$ = NULL;
-                 free ($5);
-             }
-           ;
+EndDummyRule : End Open DummyText Close { $$ = NULL; }
+             ;
+
+Caption : CaptionTok Open Text Close { $$ = $3; }
+        ;
 
 EndTable : End Open TableTok Close { $$ = NULL; }
          ;
 
-BeginDummyRule : Begin DummyText { $$ = NULL; }
-               ;
+DummyText : Text {
+                $$ = NULL;
+                free ($1);
+            }
 
-EndDummyRule : End DummyText { $$ = NULL; }
-             ;
-
+/* The actual table content. Lines are separated by newline and/or horizontal lines */
 Lines : Line               { $$ = new_line ($1, NULL); }
       | Line NewLine       { $$ = new_line ($1, NULL); }
       | Line NewLine Lines { $$ = new_line ($1, $3);   }
@@ -91,32 +99,32 @@ Lines : Line               { $$ = new_line ($1, NULL); }
       | Horizontal NewLine Lines { $$ = $3;   }
       ;
 
+/* An horizontal line can either be a \hline or a \cline */
 Horizontal : HLine            { $$ = NULL; }
            | HLine Open Close { $$ = NULL; }
-           | CLine DummyText  { $$ = NULL; }
+           | CLine Open DummyText Close  { $$ = NULL; }
            ;
 
-DummyText : Open Text Close {
-                $$ = NULL;
-                free ($2);
-            }
-
+/* A line can be one or many cells (which can be empty) separated by newcell (&) */
+/* Simple cells are either text, or integers, or numbers */
+/* A multicolumn has a simpleformat (unichar format) and a content as for a simple one */
 Line : Text                 { $$ = new_string_cell ($1, 1, '\0', NULL);  }
-     | Text NewCell Line    { $$ = new_string_cell ($1, 1, '\0', $3);    }
+     | Text    NewCell Line { $$ = new_string_cell ($1, 1, '\0', $3);    }
      | Number               { $$ = new_number_cell ($1, 1, '\0', NULL);  }
-     | Number NewCell Line  { $$ = new_number_cell ($1, 1, '\0', $3);    }
+     | Number  NewCell Line { $$ = new_number_cell ($1, 1, '\0', $3);    }
      | Integer              { $$ = new_integer_cell ($1, 1, '\0', NULL); }
      | Integer NewCell Line { $$ = new_integer_cell ($1, 1, '\0', $3);   }
-     | MultiColumn SimpleFormat Close Open Text Close                 { $$ = new_string_cell ($5, $1, $2, NULL);  }
-     | MultiColumn SimpleFormat Close Open Text Close NewCell Line    { $$ = new_string_cell ($5, $1, $2, $8);    }
-     | MultiColumn SimpleFormat Close Open Number Close               { $$ = new_number_cell ($5, $1, $2, NULL);  }
-     | MultiColumn SimpleFormat Close Open Number Close NewCell Line  { $$ = new_number_cell ($5, $1, $2, $8);    }
+     | MultiColumn SimpleFormat Close Open Text    Close              { $$ = new_string_cell ($5, $1, $2, NULL);  }
+     | MultiColumn SimpleFormat Close Open Text    Close NewCell Line { $$ = new_string_cell ($5, $1, $2, $8);    }
+     | MultiColumn SimpleFormat Close Open Number  Close              { $$ = new_number_cell ($5, $1, $2, NULL);  }
+     | MultiColumn SimpleFormat Close Open Number  Close NewCell Line { $$ = new_number_cell ($5, $1, $2, $8);    }
      | MultiColumn SimpleFormat Close Open Integer Close              { $$ = new_integer_cell ($5, $1, $2, NULL); }
      | MultiColumn SimpleFormat Close Open Integer Close NewCell Line { $$ = new_integer_cell ($5, $1, $2, $8);   }
      | NewCell      { $$ = new_string_cell (strdup (""), 1, '\0', NULL); }
      | NewCell Line { $$ = new_string_cell (strdup (""), 1, '\0', $2);   }
      ;
 
+/* The following rules are separated for readability purpose */
 SimpleFormat : Format {
                    $$ = $1[0];
                    free ($1);
@@ -126,6 +134,7 @@ SimpleFormat : Format {
 MultiColumn : MultiColumnTok Open Integer Close Open { $$ = $3; }
             ;
 
+/* A text can be a string, a greek letter, a string with modifier and can contain numbers/integers */
 Text : String { $$ = $1; }
      | Blank  { $$ = $1; }
      | Alpha  { $$ = strdup ("&alpha;"); }
@@ -149,7 +158,7 @@ Text : String { $$ = $1; }
      | SmallCaps Open Text Close { $$ = make_caps ($3); }
      | Roman     Open Text Close { $$ = $3; }
      | Serif     Open Text Close { $$ = $3; }
-     /* The following rules causes each one 2 shift/reduce warnings */
+     /* The following rules causes each one 2 shift/reduce warnings (some are common with others). Considering all others, it's worth 11 warnings */
      | Text String { $$ = append ($1, $2); }
      | Text Blank  { $$ = append ($1, $2); }
      | Text Alpha  { $$ = append_const ($1, "&alpha;"); }
@@ -159,7 +168,7 @@ Text : String { $$ = $1; }
      | Text Gamma  { $$ = append_const ($1, "&gamma;"); }
      | Text GAMMA  { $$ = append_const ($1, "&Gamma;"); }
      | Text Delta  { $$ = append_const ($1, "&delta;"); }
-     | Text DELTA  { $$ = append_const ($1, "&Delta;"); }
+     | Text DELTA  { $$ = append_const ($1, "&Delta;"); } 
      | Text Alpha Open Close { $$ = append_const ($1, "&alpha;"); }
      | Text ALPHA Open Close { $$ = append_const ($1, "&Alpha;"); }
      | Text Beta  Open Close { $$ = append_const ($1, "&beta;");  }
@@ -172,24 +181,22 @@ Text : String { $$ = $1; }
      | Text Italic    Open Text Close { $$ = append ($1, surround_with ($4, "i")); }
      | Text SmallCaps Open Text Close { $$ = append ($1, make_caps ($4)); }
      | Text Roman     Open Text Close { $$ = append ($1, $4); }
-     | Text Serif     Open Text Close { $$ = append ($1, $4); }
-     /* There can be a number in the middle of a Text. the second rule causes 17 shift/reduce warnings */
+     | Text Serif     Open Text Close { $$ = append ($1, $4); } 
+     /* There can be a number in the middle of a Text. The first rule causes 3 shift/reduce warnings and the second 35 (37 for both) */
      | Text NumberTok { $$ = append ($1, $2); }
      | NumberTok Text { $$ = append ($1, $2); }
-     /* There can be an integer in the middle of a Text. the second rule causes 19 shift/reduce warnings */
+     /* There can be an integer in the middle of a Text. The first rule causes 3 shift/reduce warnings and the second 35 (37 for both) */
      | Text IntegerTok { $$ = append ($1, $2); }
      | IntegerTok Text { $$ = append ($1, $2); }
+     /* The 4 preceding rules are woth 70 shift/reduce warnings */
      ;
 
-Garbage : Text {
-              $$ = NULL;
-              free ($1);
-          }
+/* This rule is made to consume everyting before and after the table. It can consume everyting but table opening/ending */
+Garbage : DummyText { $$ = NULL; }
         | Format {
               $$ = NULL;
               free ($1);
           }
-        /* The two following rules causes 17 shift/reduce warnings each */
         | Number     { $$ = NULL; }
         | Integer    { $$ = NULL; }
         | NewLine    { $$ = NULL; }
@@ -208,15 +215,12 @@ Garbage : Text {
         | SmallCaps  { $$ = NULL; }
         | Roman      { $$ = NULL; }
         | Serif      { $$ = NULL; }
-        | MultiColumn    { $$ = NULL; }
-        | LatexDirective { $$ = NULL; }
-        /* The two following rules cause shift/reduce warnings... */
-        | BeginDummyRule { $$ = NULL; }
-        | EndDummyRule   { $$ = NULL; }
-        | Garbage Text {
-              $$ = NULL;
-              free ($2);
-          }
+        | MultiColumn       { $$ = NULL; }
+        | LatexDirective    { $$ = NULL; }
+        /* The two following rules cause 1 shift/reduce warning each... */
+        | BeginDummyRule    { $$ = NULL; }
+        | EndDummyRule      { $$ = NULL; }
+        | Garbage DummyText { $$ = NULL; }
         | Garbage Format {
               $$ = NULL;
               free ($2);
@@ -227,7 +231,7 @@ Garbage : Text {
         | Garbage NewCell    { $$ = NULL; }
         | Garbage Begin      { $$ = NULL; }
         | Garbage End        { $$ = NULL; }
-        /* The two following rules cause shift/reduce warnings... */
+        /* The following rules causes 32 shift/reduce warnings... */
         | Garbage Open       { $$ = NULL; }
         | Garbage Close      { $$ = NULL; }
         | Garbage CaptionTok { $$ = NULL; }
@@ -242,11 +246,12 @@ Garbage : Text {
         | Garbage Serif      { $$ = NULL; }
         | Garbage MultiColumn    { $$ = NULL; }
         | Garbage LatexDirective { $$ = NULL; }
-        /* The two following rules cause shift/reduce warnings... */
+        /* The two following rules cause 1 shift/reduce warning each... */
         | Garbage BeginDummyRule { $$ = NULL; }
         | Garbage EndDummyRule   { $$ = NULL; }
         ;
 
+/* As an integer or a number can be part of a text, we handle it as a string, this converts the string to a numerical value */
 Integer : IntegerTok {
               $$ = atoi ($1);
               free ($1);
