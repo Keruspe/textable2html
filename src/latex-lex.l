@@ -126,6 +126,10 @@ FORMAT [clr|]
     return (Serif);
 }
 
+\\emph{BLANK}* {
+    return (Emphasis);
+}
+
 \\{CHAR}+ {
     return (LatexDirective);
 }

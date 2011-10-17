@@ -20,7 +20,7 @@
 %token Begin End Open Close Tabular TableTok
 %token NewLine NewCell HLine CLine MultiColumnTok CaptionTok LatexDirective
 %token Alpha ALPHA Beta BETA Gamma GAMMA Delta DELTA
-%token Bold Italic SmallCaps Roman Serif
+%token Bold Italic SmallCaps Roman Serif Emphasis
 
 %type <lines> Lines
 %type <cells> Line
@@ -34,7 +34,7 @@
 
 %start OUT
 
-%expect 117 /* In Garbage and mostly in Text */
+%expect 123 /* In Garbage and mostly in Text */
 
 %%
 OUT: GarbageLessTable {
@@ -153,12 +153,13 @@ Text : String { $$ = $1; }
      | GAMMA Open Close { $$ = strdup ("&Gamma;"); }
      | Delta Open Close { $$ = strdup ("&delta;"); }
      | DELTA Open Close { $$ = strdup ("&Delta;"); }
-     | Bold      Open Text Close { $$ = surround_with ($3, "b"); }
-     | Italic    Open Text Close { $$ = surround_with ($3, "i"); }
+     | Emphasis  Open Text Close { $$ = surround_with ($3, "em"); }
+     | Bold      Open Text Close { $$ = surround_with ($3, "b");  }
+     | Italic    Open Text Close { $$ = surround_with ($3, "i");  }
      | SmallCaps Open Text Close { $$ = make_caps ($3); }
      | Roman     Open Text Close { $$ = $3; }
      | Serif     Open Text Close { $$ = $3; }
-     /* The following rules causes each one 2 shift/reduce warnings (some are common with others). Considering all others, it's worth 11 warnings */
+     /* The following rules causes each one 2 shift/reduce warnings (some are common with others). Considering all others, it's worth 15 warnings */
      | Text String { $$ = append ($1, $2); }
      | Text Blank  { $$ = append ($1, $2); }
      | Text Alpha  { $$ = append_const ($1, "&alpha;"); }
@@ -177,8 +178,9 @@ Text : String { $$ = $1; }
      | Text GAMMA Open Close { $$ = append_const ($1, "&Gamma;"); }
      | Text Delta Open Close { $$ = append_const ($1, "&delta;"); }
      | Text DELTA Open Close { $$ = append_const ($1, "&Delta;"); }
-     | Text Bold      Open Text Close { $$ = append ($1, surround_with ($4, "b")); }
-     | Text Italic    Open Text Close { $$ = append ($1, surround_with ($4, "i")); }
+     | Text Emphasis  Open Text Close { $$ = append ($1, surround_with ($4, "em")); }
+     | Text Bold      Open Text Close { $$ = append ($1, surround_with ($4, "b"));  }
+     | Text Italic    Open Text Close { $$ = append ($1, surround_with ($4, "i"));  }
      | Text SmallCaps Open Text Close { $$ = append ($1, make_caps ($4)); }
      | Text Roman     Open Text Close { $$ = append ($1, $4); }
      | Text Serif     Open Text Close { $$ = append ($1, $4); } 
@@ -210,6 +212,7 @@ Garbage : DummyText { $$ = NULL; }
         | Tabular    { $$ = NULL; }
         | HLine      { $$ = NULL; }
         | CLine      { $$ = NULL; }
+        | Emphasis   { $$ = NULL; }
         | Bold       { $$ = NULL; }
         | Italic     { $$ = NULL; }
         | SmallCaps  { $$ = NULL; }
@@ -231,7 +234,7 @@ Garbage : DummyText { $$ = NULL; }
         | Garbage NewCell    { $$ = NULL; }
         | Garbage Begin      { $$ = NULL; }
         | Garbage End        { $$ = NULL; }
-        /* The following rules causes 32 shift/reduce warnings... */
+        /* The following rules causes 34 shift/reduce warnings... */
         | Garbage Open       { $$ = NULL; }
         | Garbage Close      { $$ = NULL; }
         | Garbage CaptionTok { $$ = NULL; }
