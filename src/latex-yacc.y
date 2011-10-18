@@ -102,16 +102,16 @@ Horizontal : HLine            { $$ = NULL; }
 /* A line can be one or many cells (which can be empty) separated by newcell (&) */
 /* Simple cells are either text, or integers, or numbers */
 /* A multicolumn has a simpleformat (unichar format) and a content as for a simple one */
-Line : Text                 { $$ = new_string_cell ($1, 1, '\0', NULL);  }
-     | Text    NewCell Line { $$ = new_string_cell ($1, 1, '\0', $3);    }
-     | Number               { $$ = new_number_cell ($1, 1, '\0', NULL);  }
-     | Number  NewCell Line { $$ = new_number_cell ($1, 1, '\0', $3);    }
+Line : Text                 { $$ = new_string_cell  ($1, 1, '\0', NULL); }
+     | Text    NewCell Line { $$ = new_string_cell  ($1, 1, '\0', $3);   }
+     | Number               { $$ = new_number_cell  ($1, 1, '\0', NULL); }
+     | Number  NewCell Line { $$ = new_number_cell  ($1, 1, '\0', $3);   }
      | Integer              { $$ = new_integer_cell ($1, 1, '\0', NULL); }
      | Integer NewCell Line { $$ = new_integer_cell ($1, 1, '\0', $3);   }
-     | MultiColumn SimpleFormat Close Open Text    Close              { $$ = new_string_cell ($5, $1, $2, NULL);  }
-     | MultiColumn SimpleFormat Close Open Text    Close NewCell Line { $$ = new_string_cell ($5, $1, $2, $8);    }
-     | MultiColumn SimpleFormat Close Open Number  Close              { $$ = new_number_cell ($5, $1, $2, NULL);  }
-     | MultiColumn SimpleFormat Close Open Number  Close NewCell Line { $$ = new_number_cell ($5, $1, $2, $8);    }
+     | MultiColumn SimpleFormat Close Open Text    Close              { $$ = new_string_cell  ($5, $1, $2, NULL); }
+     | MultiColumn SimpleFormat Close Open Text    Close NewCell Line { $$ = new_string_cell  ($5, $1, $2, $8);   }
+     | MultiColumn SimpleFormat Close Open Number  Close              { $$ = new_number_cell  ($5, $1, $2, NULL); }
+     | MultiColumn SimpleFormat Close Open Number  Close NewCell Line { $$ = new_number_cell  ($5, $1, $2, $8);   }
      | MultiColumn SimpleFormat Close Open Integer Close              { $$ = new_integer_cell ($5, $1, $2, NULL); }
      | MultiColumn SimpleFormat Close Open Integer Close NewCell Line { $$ = new_integer_cell ($5, $1, $2, $8);   }
      | NewCell      { $$ = new_string_cell (strdup (""), 1, '\0', NULL); }
