@@ -153,3 +153,7 @@ FORMAT [clr|]
     yylval.string = strdup (yytext);
     return (Blank);
 }
+
+<<EOF>> {
+    yyterminate ();
+}

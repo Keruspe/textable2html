@@ -24,7 +24,7 @@
 
 %type <lines> Lines
 %type <cells> Line
-%type <table> Table GarbageLessTable
+%type <table> Table
 %type <integer> MultiColumn Integer
 %type <number> Number
 %type <character> SimpleFormat
@@ -37,18 +37,12 @@
 %expect 123 /* In Garbage and mostly in Text */
 
 %%
-OUT: GarbageLessTable {
-         /* Generate html and exit */
-         htmlize ($1);
-         exit (0);
-     }
-
-/* This is to ignore the garbage before and after the table */
-GarbageLessTable :         Table         { $$ = $1; }
-                 |         Table Garbage { $$ = $1; }
-                 | Garbage Table         { $$ = $2; }
-                 | Garbage Table Garbage { $$ = $2; }
-                 ;
+/* This ignores the garbage before and after the table and generates the html */
+OUT :         Table         { htmlize ($1); }
+    |         Table Garbage { htmlize ($1); }
+    | Garbage Table         { htmlize ($2); }
+    | Garbage Table Garbage { htmlize ($2); }
+    ;
 
 /* A table can either be a tabular, or a tabular in a table or a tabular in something like a center block, and there can be a caption in it */
 Table :            BeginTabular Format Close Lines EndTabular                  { $$ = new_table ($2, $4, NULL); }
