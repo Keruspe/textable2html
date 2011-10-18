@@ -33,7 +33,8 @@ print_header (FILE *out, bool borders, const char *format)
                 "border: solid 1px; }\n"
                 "            table { border-collapse: collapse; ");
     fprintf (out, "}\n");
-    for (unsigned int i = 0, j = 0; i < strlen (format); ++i)
+    unsigned int j = 0;
+    for (unsigned int i = 0; i < strlen (format); ++i)
     {
         const char *align;
         switch (format[i]) {
@@ -51,6 +52,8 @@ print_header (FILE *out, bool borders, const char *format)
         }
         fprintf (out, "            .col%u { text-align: %s }\n", j++, align);
     }
+    if (no_string) /* For the total col */
+        fprintf (out, "            .col%u { text-align: center; }\n", j);
     fprintf (out,
             "            .center { text-align: center; }\n"
             "            .left   { text-align: left;   }\n"
