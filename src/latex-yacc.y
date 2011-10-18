@@ -34,7 +34,7 @@
 
 %start OUT
 
-%expect 123 /* In Garbage and mostly in Text */
+%expect 128 /* In Garbage and mostly in Text */
 
 %%
 /* This ignores the garbage before and after the table and generates the html */
@@ -131,6 +131,8 @@ MultiColumn : MultiColumnTok Open Integer Close Open { $$ = $3; }
 /* A text can be a string, a greek letter, a string with modifier and can contain numbers/integers */
 Text : String { $$ = $1; }
      | Blank  { $$ = $1; }
+     /* The following rule causes 2 shift/reduce warnings */
+     | Format { $$ = $1; }
      | Alpha  { $$ = strdup ("&alpha;"); }
      | ALPHA  { $$ = strdup ("&Alpha;"); }
      | Beta   { $$ = strdup ("&beta;");  }
@@ -153,9 +155,10 @@ Text : String { $$ = $1; }
      | SmallCaps Open Text Close { $$ = make_caps ($3); }
      | Roman     Open Text Close { $$ = $3; }
      | Serif     Open Text Close { $$ = $3; }
-     /* The following rules causes each one 2 shift/reduce warnings (some are common with others). Considering all others, it's worth 15 warnings */
+     /* The following rules causes each one 2 shift/reduce warnings (some are common with others). Considering all others, it's worth 18 warnings */
      | Text String { $$ = append ($1, $2); }
      | Text Blank  { $$ = append ($1, $2); }
+     | Text Format { $$ = append ($1, $2); }
      | Text Alpha  { $$ = append_const ($1, "&alpha;"); }
      | Text ALPHA  { $$ = append_const ($1, "&Alpha;"); }
      | Text Beta   { $$ = append_const ($1, "&beta;");  }
@@ -188,11 +191,7 @@ Text : String { $$ = $1; }
      ;
 
 /* This rule is made to consume everyting before and after the table. It can consume everyting but table opening/ending */
-Garbage : DummyText { $$ = NULL; }
-        | Format {
-              $$ = NULL;
-              free ($1);
-          }
+Garbage : DummyText  { $$ = NULL; }
         | Number     { $$ = NULL; }
         | Integer    { $$ = NULL; }
         | NewLine    { $$ = NULL; }
@@ -212,16 +211,12 @@ Garbage : DummyText { $$ = NULL; }
         | SmallCaps  { $$ = NULL; }
         | Roman      { $$ = NULL; }
         | Serif      { $$ = NULL; }
-        | MultiColumn       { $$ = NULL; }
-        | LatexDirective    { $$ = NULL; }
+        | MultiColumn        { $$ = NULL; }
+        | LatexDirective     { $$ = NULL; }
         /* The two following rules cause 1 shift/reduce warning each... */
-        | BeginDummyRule    { $$ = NULL; }
-        | EndDummyRule      { $$ = NULL; }
-        | Garbage DummyText { $$ = NULL; }
-        | Garbage Format {
-              $$ = NULL;
-              free ($2);
-          }
+        | BeginDummyRule     { $$ = NULL; }
+        | EndDummyRule       { $$ = NULL; }
+        | Garbage DummyText  { $$ = NULL; }
         | Garbage Number     { $$ = NULL; }
         | Garbage Integer    { $$ = NULL; }
         | Garbage NewLine    { $$ = NULL; }
