@@ -74,12 +74,12 @@ htmlize (Table *table)
     {
         if (integers_only)
         {
-            for (unsigned int i = 0; i <= table->nb_cell; ++i)
+            for (unsigned int i = 0; i <= table->nb_cols; ++i)
                 totals = new_integer_cell (0, 1, '\0', totals);
         }
         else
         {
-            for (unsigned int i = 0; i <= table->nb_cell; ++i)
+            for (unsigned int i = 0; i <= table->nb_cols; ++i)
                 totals = new_number_cell (0, 1, '\0', totals);
         }
     }
@@ -97,7 +97,7 @@ htmlize (Table *table)
         unsigned int i;
         int   isum = 0;
         float fsum = 0;
-        for (i = 0; cell && i < table->nb_cell; ++i)
+        for (i = 0; cell && i < table->nb_cols; ++i)
         {
             const char *number_format = (no_string) ? default_number_format : (cell->kind == INTEGER) ? "%d" : "%f";
             fprintf (out,
@@ -163,7 +163,7 @@ htmlize (Table *table)
             }
             cell = cell->next;
         }
-        for (; i < table->nb_cell; ++i)
+        for (; i < table->nb_cols; ++i)
         {
             if (no_string)
                 current = current->next;
@@ -231,6 +231,7 @@ htmlize (Table *table)
     fclose (out);
 }
 
+/* Basic error reporting */
 void
 yyerror(char *error)
 {
@@ -242,12 +243,15 @@ yyerror(char *error)
 int
 main(int argc, char *argv[])
 {
+    /* We need an input file */
     if (argc != 2) {
         fprintf (stderr, "usage: %s <file>\n", argv[0]);
         yyerror ("bad invocation");
     }
+    /* Store the input file name to generate the output one */
     input_file = argv[1];
     FILE *in = fopen (input_file, "r");
+    /* lex will fall back to stdin if file doesn't exist */
     yyset_in (in);
     yyparse ();
     yylex_destroy ();
