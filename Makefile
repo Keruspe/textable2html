@@ -30,4 +30,7 @@ samples: sample/test.html sample/full_numbers.html
 sample/%.html: sample/%.tex $(bin)
 	./$(bin) $<
 
-.PHONY: all clean samples
+valgrind-check: sample/test.tex sample/full_numbers.tex $(bin)
+	for i in $(filter-out $(bin), $^); do valgrind --leak-check=full --show-reachable=yes ./$(bin) $$i || break; done
+
+.PHONY: all clean samples valgrind-check
