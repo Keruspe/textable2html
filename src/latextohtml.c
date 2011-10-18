@@ -133,8 +133,12 @@ htmlize (Table *table)
                          number_format, cell->content.number);
                 break;
             case INTEGER:
-                fprintf (out,
-                         number_format, cell->content.integer);
+                if (no_string && !integers_only)
+                    fprintf (out,
+                             number_format, (float) cell->content.integer);
+                else
+                    fprintf (out,
+                             number_format, cell->content.integer);
                 break;
             case STRING:
                 fprintf (out,
