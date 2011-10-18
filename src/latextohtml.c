@@ -3,7 +3,8 @@
 #include <stdio.h>
 
 const char *input_file;
-NumbersState numbers_state = INTEGERS_ONLY;
+bool no_string = true;
+bool integers_only = true;
 int nb_line = 1;
 
 int yylex_destroy ();
@@ -13,20 +14,7 @@ void yyset_in (FILE *in_str);
 void
 htmlize (Table *table)
 {
-    const char *number_format;
-    switch (numbers_state)
-    {
-    case INTEGERS_ONLY:
-        number_format = "%d";
-        break;
-    case NUMBERS_AND_INTEGERS:
-        number_format = "%f";
-        break;
-    default:
-        /* nothing to do but silence warning */
-        number_format = "";
-        break;
-    }
+    const char *default_number_format = (integers_only) ? "%d" : "%f";
     char *output_file = (char *) malloc ((strlen (input_file) + 2) * sizeof (char));
     sprintf (output_file, "%s", input_file);
     memcpy (output_file + strlen (input_file) - 3, "html", 5);
@@ -82,25 +70,24 @@ htmlize (Table *table)
             "        <div>\n");
     Line *line = table->lines;
     Cell *totals = NULL;
-    switch (numbers_state)
+    if (no_string)
     {
-    case INTEGERS_ONLY:
-        for (unsigned int i = 0; i <= table->nb_cell; ++i)
-            totals = new_integer_cell (0, 1, '\0', totals);
-        break;
-    case NUMBERS_AND_INTEGERS:
-        for (unsigned int i = 0; i <= table->nb_cell; ++i)
-            totals = new_number_cell (0, 1, '\0', totals);
-        break;
-    default:
-        /* nothing to do */
-        break;
+        if (integers_only)
+        {
+            for (unsigned int i = 0; i <= table->nb_cell; ++i)
+                totals = new_integer_cell (0, 1, '\0', totals);
+        }
+        else
+        {
+            for (unsigned int i = 0; i <= table->nb_cell; ++i)
+                totals = new_number_cell (0, 1, '\0', totals);
+        }
     }
     fprintf (out,
-            "            <table>\n");
+             "            <table>\n");
     if (table->caption)
         fprintf (out,
-            "                <caption>%s</caption>\n", table->caption);
+                 "                <caption>%s</caption>\n", table->caption);
     while (line)
     {
         fprintf (out,
@@ -112,8 +99,9 @@ htmlize (Table *table)
         float fsum = 0;
         for (i = 0; cell && i < table->nb_cell; ++i)
         {
+            const char *number_format = (no_string) ? default_number_format : (cell->kind == INTEGER) ? "%d" : "%f";
             fprintf (out,
-                    "                    <td class=\"col%d", i);
+                     "                    <td class=\"col%d", i);
             if (cell->size > 1)
             {
                 char *format;
@@ -133,109 +121,103 @@ htmlize (Table *table)
                     break;
                 }
                 fprintf (out,
-                        " %s\" colspan=\"%d", format, cell->size);
+                         " %s\" colspan=\"%d", format, cell->size);
                 i += (cell->size - 1);
             }
             fprintf (out,
-                    "\">");
+                     "\">");
             switch (cell->kind)
             {
             case NUMBER:
                 fprintf (out,
-                        number_format, cell->content.number);
+                         number_format, cell->content.number);
                 break;
             case INTEGER:
                 fprintf (out,
-                        number_format, cell->content.integer);
+                         number_format, cell->content.integer);
                 break;
             case STRING:
                 fprintf (out,
-                        "%s", cell->content.string);
+                         "%s", cell->content.string);
             }
             fprintf (out,
-                    "</td>\n");
-            switch (numbers_state)
+                     "</td>\n");
+            if (no_string)
             {
-            case INTEGERS_ONLY:
-                isum += cell->content.integer;
-                current->content.integer += cell->content.integer;
-                current = current->next;
-                break;
-            case NUMBERS_AND_INTEGERS:
+                if (integers_only)
                 {
-                    float value =((cell->kind == INTEGER) ? (float)cell->content.integer : cell->content.number);
+                    isum += cell->content.integer;
+                    current->content.integer += cell->content.integer;
+                }
+                else
+                {
+                    float value = ((cell->kind == INTEGER) ? (float)cell->content.integer : cell->content.number);
                     fsum += value;
                     current->content.number += value;
-                    current = current->next;
                 }
-                break;
-            default:
-                /* nothing to do */
-                break;
+                current = current->next;
             }
             cell = cell->next;
         }
         for (; i < table->nb_cell; ++i)
         {
-            if (numbers_state != ALL)
+            if (no_string)
                 current = current->next;
             fprintf (out,
                     "                    <td class=\"col%d\"></td>\n", i);
         }
-        switch (numbers_state)
-        {
-        case INTEGERS_ONLY:
-            current->content.integer += isum;
-            fprintf (out,
-                    "                    <td class=\"col%d\">%d</td>\n", i, isum);
-            break;
-        case NUMBERS_AND_INTEGERS:
-            current->content.number += fsum;
-            fprintf (out,
-                    "                    <td class=\"col%d\">%f</td>\n", i, fsum);
-            break;
-        default:
-            /* nothing to do */
-            break;
+        if (no_string)
+        { /* TODO: Refactor */
+            if (integers_only)
+            {
+                current->content.integer += isum;
+                fprintf (out,
+                         "                    <td class=\"col%d\">%d</td>\n", i, isum);
+            }
+            else
+            {
+                current->content.number += fsum;
+                fprintf (out,
+                         "                    <td class=\"col%d\">%f</td>\n", i, fsum);
+            }
         }
         fprintf (out,
-                "                </tr>\n");
+                 "                </tr>\n");
         line = line->next;
     }
     free_table (table);
-    switch (numbers_state)
+    if (no_string)
     {
-    case INTEGERS_ONLY:
-        fprintf (out,
-                "                <tr>\n");
-        for (unsigned int i = 0; totals; ++i)
+        if (integers_only)
         {
             fprintf (out,
-                    "                    <td class=\"col%d\">%d</td>\n", i, totals->content.integer);
-            Cell *next = totals->next;
-            free (totals);
-            totals = next;
+                     "                <tr>\n");
+            for (unsigned int i = 0; totals; ++i)
+            {
+                fprintf (out,
+                         "                    <td class=\"col%d\">%d</td>\n", i, totals->content.integer);
+                Cell *next = totals->next;
+                free (totals);
+                totals = next;
+            }
+            fprintf (out,
+                     "                </tr>\n");
         }
-        fprintf (out,
-                "                </tr>\n");
-        break;
-    case NUMBERS_AND_INTEGERS:
-        fprintf (out,
-                "                <tr>\n");
-        for (unsigned int i = 0; totals; ++i)
+        else
         {
             fprintf (out,
-                    "                    <td class=\"col%d\">%f</td>\n", i, totals->content.number);
-            Cell *next = totals->next;
-            free (totals);
-            totals = next;
+                     "                <tr>\n");
+            for (unsigned int i = 0; totals; ++i)
+            {
+                fprintf (out,
+                         "                    <td class=\"col%d\">%f</td>\n", i, totals->content.number);
+                Cell *next = totals->next;
+                free (totals);
+                totals = next;
+            }
+            fprintf (out,
+                     "                </tr>\n");
         }
-        fprintf (out,
-                "                </tr>\n");
-        break;
-    default:
-        /* nothing to do */
-        break;
     }
     fprintf (out,
             "            </table>\n"

@@ -2,7 +2,8 @@
 
 #include <stdio.h>
 
-extern NumbersState numbers_state;
+extern bool no_string;;
+extern bool integers_only;
 
 Table *
 new_table (char *format, Line *lines, char *caption)
@@ -44,11 +45,10 @@ new_cell (CellKind kind, CellContent content, unsigned int size, FormatKind form
     switch (kind)
     {
     case NUMBER:
-        if (numbers_state == INTEGERS_ONLY)
-            numbers_state = NUMBERS_AND_INTEGERS;
+        integers_only = false;
         break;
     case STRING:
-        numbers_state = ALL;
+        no_string = false;
         break;
     default:
         /* nothing to do */

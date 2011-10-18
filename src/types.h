@@ -20,12 +20,6 @@ typedef enum {
     STRING
 } CellKind;
 
-typedef enum {
-    INTEGERS_ONLY,
-    NUMBERS_AND_INTEGERS,
-    ALL
-} NumbersState;
-
 typedef union {
     char *string;
     int   integer;
