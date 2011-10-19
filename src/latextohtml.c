@@ -109,10 +109,7 @@ print_cell_content (FILE *out, Cell *cell, const char *default_number_format)
         fprintf (out, number_format, cell->content.number);
         break;
     case INTEGER:
-        if (no_string && !integers_only)
-            fprintf (out, number_format, (float) cell->content.integer);
-        else
-            fprintf (out, number_format, cell->content.integer);
+        fprintf (out, number_format, cell->content.integer);
         break;
     case STRING:
         fprintf (out, "%s", cell->content.string);
@@ -150,7 +147,6 @@ print_line (FILE *out, Cell *cell, unsigned int nb_cols, const char *default_num
     float fsum = 0;
     for (i = 0; cell && i < nb_cols; ++i, cell = cell->next)
     {
-        i += print_cell (out, cell, i, default_number_format);
         if (no_string)
         {
             switch (cell->kind)
@@ -163,8 +159,9 @@ print_line (FILE *out, Cell *cell, unsigned int nb_cols, const char *default_num
                         total->content.integer += cell->content.integer;
                     break;
                 }
-                else /* Convert cell value as number and let the NUMBER case handle it so don't break */
-                    cell->content.number = (float) cell->content.integer;
+                /* Convert cell value as number and let the NUMBER case handle it so don't break */
+                cell->content.number = (float) cell->content.integer;
+                cell->kind = NUMBER;
             case NUMBER:
                 fsum += cell->content.number;
                 if (total)
@@ -177,6 +174,7 @@ print_line (FILE *out, Cell *cell, unsigned int nb_cols, const char *default_num
             if (total)
                 total = total->next;
         }
+        i += print_cell (out, cell, i, default_number_format);
     }
     print_empty_cells (out, i, nb_cols);
     if (no_string)
