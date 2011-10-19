@@ -15,23 +15,23 @@ static void
 print_header (FILE *out, bool borders, const char *format)
 {
     fprintf (out,
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-            "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
-            "<html version=\"-//W3C//DTD XHTML 1.1//EN\"\n"
-            "      xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\"\n"
-            "      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-            "      xsi:schemaLocation=\"http://www.w3.org/1999/xhtml\n"
-            "                          http://www.w3.org/MarkUp/SCHEMA/xhtml11.xsd\"\n"
-            ">\n"
-            "    <head>\n"
-            "        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n"
-            "        <title>Table</title>\n"
-            "        <style type=\"text/css\">\n"
-            "            td { padding: 10px; ");
+             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+             "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n"
+             "<html version=\"-//W3C//DTD XHTML 1.1//EN\"\n"
+             "      xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\"\n"
+             "      xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+             "      xsi:schemaLocation=\"http://www.w3.org/1999/xhtml\n"
+             "                          http://www.w3.org/MarkUp/SCHEMA/xhtml11.xsd\"\n"
+             ">\n"
+             "    <head>\n"
+             "        <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />\n"
+             "        <title>Table</title>\n"
+             "        <style type=\"text/css\">\n"
+             "            td { padding: 10px; ");
     if (borders)
         fprintf (out,
-                "border: solid 1px; }\n"
-                "            table { border-collapse: collapse; ");
+                 "border: solid 1px; }\n"
+                 "            table { border-collapse: collapse; ");
     fprintf (out, "}\n");
     unsigned int j = 0;
     for (unsigned int i = 0; i < strlen (format); ++i)
@@ -55,14 +55,14 @@ print_header (FILE *out, bool borders, const char *format)
     if (no_string) /* For the total col */
         fprintf (out, "            .col%u { text-align: center; }\n", j);
     fprintf (out,
-            "            .center { text-align: center; }\n"
-            "            .left   { text-align: left;   }\n"
-            "            .right  { text-align: right;  }\n"
-            "        </style>\n"
-            "    </head>\n"
-            "    <body>\n"
-            "        <div>\n"
-            "            <table>\n");
+             "            .center { text-align: center; }\n"
+             "            .left   { text-align: left;   }\n"
+             "            .right  { text-align: right;  }\n"
+             "        </style>\n"
+             "    </head>\n"
+             "    <body>\n"
+             "        <div>\n"
+             "            <table>\n");
 }
 
 static void
