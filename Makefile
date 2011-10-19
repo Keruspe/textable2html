@@ -25,12 +25,12 @@ src/latex-lex.o: src/latex-lex.l src/latex-yacc.c y.tab.h
 clean:
 	$(RM) $(generated_sources) $(objects) $(bin) y.tab.h sample/*.html
 
-samples: sample/test.html sample/full_numbers.html
+samples: sample/test.html sample/full_numbers.html sample/example.html
 
 sample/%.html: sample/%.tex $(bin)
 	./$(bin) $<
 
-valgrind-check: sample/test.tex sample/full_numbers.tex $(bin)
+valgrind-check: sample/test.tex sample/full_numbers.tex sample/example.tex $(bin)
 	for i in $(filter-out $(bin), $^); do valgrind --leak-check=full --show-reachable=yes ./$(bin) $$i || break; done
 
 .PHONY: all clean samples valgrind-check

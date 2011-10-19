@@ -2,12 +2,14 @@ BLANK [ \t]
 DIGIT [0-9]
 NUMBER {DIGIT}+"."?{DIGIT}*
 CHAR [a-zA-Z0-9_-]
-STRINGLIMIT [^\ \\{}&\n]+
-STRINGENDING [^\\{}&\n]*{STRINGLIMIT}
+STRINGLIMIT [^\ \\{}&\n$]+
+STRINGENDING [^\\{}&\n$]*{STRINGLIMIT}
 STRING {STRINGLIMIT}{STRINGENDING}?
 NEWLINE \\\\
 NEWCELL "&"
 FORMAT [clr|]
+
+%option nounput
 
 %{
     #include "y.tab.h"
@@ -106,23 +108,31 @@ FORMAT [clr|]
     return (DELTA);
 }
 
-\\textbf{BLANK}* {
+\\% {
+    return (Percent);
+}
+
+"$" {
+    /* Just ignore it */
+}
+
+\\textbf{BLANK}*|\\bf{BLANK}* {
     return (Bold);
 }
 
-\\textit{BLANK}* {
+\\textit{BLANK}*|\\it{BLANK}* {
     return (Italic);
 }
 
-\\textsc{BLANK}* {
+\\textsc{BLANK}*|\\sc{BLANK}* {
     return (SmallCaps);
 }
 
-\\textrm{BLANK}* {
+\\textrm{BLANK}*|\\rm{BLANK}* {
     return (Roman);
 }
 
-\\textsf{BLANK}* {
+\\textsf{BLANK}*|\\sf{BLANK}* {
     return (Serif);
 }
 

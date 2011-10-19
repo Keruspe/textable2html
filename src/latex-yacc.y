@@ -19,7 +19,7 @@
 %token <string> String NumberTok IntegerTok Format Blank
 %token Begin End Open Close Tabular TableTok
 %token NewLine NewCell HLine CLine MultiColumnTok CaptionTok LatexDirective
-%token Alpha ALPHA Beta BETA Gamma GAMMA Delta DELTA
+%token Alpha ALPHA Beta BETA Gamma GAMMA Delta DELTA Percent
 %token Bold Italic SmallCaps Roman Serif Emphasis
 
 %type <lines> Lines
@@ -34,7 +34,7 @@
 
 %start OUT
 
-%expect 128 /* In Garbage and mostly in Text */
+%expect 135 /* In Garbage and mostly in Text */
 
 %%
 /* This ignores the garbage before and after the table and generates the html */
@@ -66,16 +66,19 @@ BeginDummyRule : Begin Open DummyText Close { $$ = NULL; }
 BeginTabular : Begin Open Tabular Close Open { $$ = NULL; }
              ;
 
-EndTabular : End Open Tabular Close { $$ = NULL; }
+EndTabular : End Open Tabular Close         { $$ = NULL; }
+           | End Open Tabular Close NewLine { $$ = NULL; }
            ;
 
 EndDummyRule : End Open DummyText Close { $$ = NULL; }
              ;
 
-Caption : CaptionTok Open Text Close { $$ = $3; }
+Caption : CaptionTok Open Text Close         { $$ = $3; }
+        | CaptionTok Open Text Close NewLine { $$ = $3; }
         ;
 
-EndTable : End Open TableTok Close { $$ = NULL; }
+EndTable : End Open TableTok Close         { $$ = NULL; }
+         | End Open TableTok Close NewLine { $$ = NULL; }
          ;
 
 DummyText : Text {
@@ -129,18 +132,19 @@ MultiColumn : MultiColumnTok Open Integer Close Open { $$ = $3; }
             ;
 
 /* A text can be a string, a greek letter, a string with modifier and can contain numbers/integers */
-Text : String { $$ = $1; }
-     | Blank  { $$ = $1; }
+Text : String   { $$ = $1; }
+     | Blank    { $$ = $1; }
      /* The following rule causes 2 shift/reduce warnings */
-     | Format { $$ = $1; }
-     | Alpha  { $$ = strdup ("&alpha;"); }
-     | ALPHA  { $$ = strdup ("&Alpha;"); }
-     | Beta   { $$ = strdup ("&beta;");  }
-     | BETA   { $$ = strdup ("&Beta;");  }
-     | Gamma  { $$ = strdup ("&gamma;"); }
-     | GAMMA  { $$ = strdup ("&Gamma;"); }
-     | Delta  { $$ = strdup ("&delta;"); }
-     | DELTA  { $$ = strdup ("&Delta;"); }
+     | Format   { $$ = $1; }
+     | Percent  { $$ = strdup ("&#37;"); }
+     | Alpha    { $$ = strdup ("&alpha;"); }
+     | ALPHA    { $$ = strdup ("&Alpha;"); }
+     | Beta     { $$ = strdup ("&beta;");  }
+     | BETA     { $$ = strdup ("&Beta;");  }
+     | Gamma    { $$ = strdup ("&gamma;"); }
+     | GAMMA    { $$ = strdup ("&Gamma;"); }
+     | Delta    { $$ = strdup ("&delta;"); }
+     | DELTA    { $$ = strdup ("&Delta;"); }
      | Alpha Open Close { $$ = strdup ("&alpha;"); }
      | ALPHA Open Close { $$ = strdup ("&Alpha;"); }
      | Beta  Open Close { $$ = strdup ("&beta;");  }
@@ -156,17 +160,18 @@ Text : String { $$ = $1; }
      | Roman     Open Text Close { $$ = $3; }
      | Serif     Open Text Close { $$ = $3; }
      /* The following rules causes each one 2 shift/reduce warnings (some are common with others). Considering all others, it's worth 18 warnings */
-     | Text String { $$ = append ($1, $2); }
-     | Text Blank  { $$ = append ($1, $2); }
-     | Text Format { $$ = append ($1, $2); }
-     | Text Alpha  { $$ = append_const ($1, "&alpha;"); }
-     | Text ALPHA  { $$ = append_const ($1, "&Alpha;"); }
-     | Text Beta   { $$ = append_const ($1, "&beta;");  }
-     | Text BETA   { $$ = append_const ($1, "&Beta;");  }
-     | Text Gamma  { $$ = append_const ($1, "&gamma;"); }
-     | Text GAMMA  { $$ = append_const ($1, "&Gamma;"); }
-     | Text Delta  { $$ = append_const ($1, "&delta;"); }
-     | Text DELTA  { $$ = append_const ($1, "&Delta;"); } 
+     | Text String   { $$ = append ($1, $2); }
+     | Text Blank    { $$ = append ($1, $2); }
+     | Text Format   { $$ = append ($1, $2); }
+     | Text Percent  { $$ = append_const ($1, "&#37;");   }
+     | Text Alpha    { $$ = append_const ($1, "&alpha;"); }
+     | Text ALPHA    { $$ = append_const ($1, "&Alpha;"); }
+     | Text Beta     { $$ = append_const ($1, "&beta;");  }
+     | Text BETA     { $$ = append_const ($1, "&Beta;");  }
+     | Text Gamma    { $$ = append_const ($1, "&gamma;"); }
+     | Text GAMMA    { $$ = append_const ($1, "&Gamma;"); }
+     | Text Delta    { $$ = append_const ($1, "&delta;"); }
+     | Text DELTA    { $$ = append_const ($1, "&Delta;"); }
      | Text Alpha Open Close { $$ = append_const ($1, "&alpha;"); }
      | Text ALPHA Open Close { $$ = append_const ($1, "&Alpha;"); }
      | Text Beta  Open Close { $$ = append_const ($1, "&beta;");  }
