@@ -2,4 +2,3 @@ latex-yacc.c
 latex-lex.c
 latextohtml
 y.tab.h
-*.html
