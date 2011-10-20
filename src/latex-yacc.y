@@ -36,7 +36,7 @@
 
 %start OUT
 
-/*%expect 51 /* In Garbage and mostly in Text */
+%expect 55 /* In Garbage and mostly in Text */
 
 %%
 /* This ignores the garbage before and after the table and generates the html */
@@ -147,7 +147,7 @@ Text : String   { $$ = $1; }
      | Percent  { $$ = strdup ("&#37;"); }
      | TextModifier   Text Close { $$ = surround_with ($2, $1); }
      | SmallCaps Open Text Close { $$ = make_caps ($3); }
-     /*| Open SmallCaps Text Close { $$ = make_caps ($3); }*/
+     | Open SmallCaps Text Close { $$ = make_caps ($3); }
      | Text String  { $$ = append (append_const ($1, " "), $2); }
      | Text Blank   { $$ = append ($1, $2); }
      | Text Format  { $$ = append ($1, $2); }
@@ -155,7 +155,7 @@ Text : String   { $$ = $1; }
      | Text Percent { $$ = append_const ($1, "&#37;"); }
      | Text TextModifier   Text Close { $$ = append ($1, surround_with ($3, $2)); }
      | Text SmallCaps Open Text Close { $$ = append ($1, make_caps ($4)); }
-     /*| Text Open SmallCaps Text Close { $$ = append ($1, make_caps ($4)); }*/
+     | Text Open SmallCaps Text Close { $$ = append ($1, make_caps ($4)); }
      | Text NumberTok  { $$ = append ($1, $2); }
      | NumberTok Text  { $$ = append ($1, $2); }
      | Text IntegerTok { $$ = append ($1, $2); }
@@ -179,11 +179,11 @@ TextModifier : Emphasis Open { $$ = "em"; }
              | Italic   Open { $$ = "i";  }
              | Roman    Open { $$ = NULL; }
              | Serif    Open { $$ = NULL; }
-             /*| Open Emphasis { $$ = "em"; }
+             | Open Emphasis { $$ = "em"; }
              | Open Bold     { $$ = "b";  }
              | Open Italic   { $$ = "i";  }
              | Open Roman    { $$ = NULL; }
-             | Open Serif    { $$ = NULL; }*/
+             | Open Serif    { $$ = NULL; }
              ;
 
 /* This rule is made to consume everyting before and after the table. It can consume everyting but table opening/ending */

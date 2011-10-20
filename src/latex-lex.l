@@ -66,12 +66,10 @@ COMMENT \%[^\n]*
 }
 
 {BLANK}*\{{BLANK}* {
-    printf ("Open\n");
     return (Open);
 }
 
 {BLANK}*\} {
-    printf ("Close\n");
     return (Close);
 }
 
@@ -84,7 +82,6 @@ COMMENT \%[^\n]*
 }
 
 {BLANK}*\\vspace{BLANK}* {
-    printf ("VSpace\n");
     return (VSpace);
 }
 
@@ -157,7 +154,6 @@ COMMENT \%[^\n]*
 }
 
 \\{CHAR}+ {
-    printf ("Directive: %s\n", yytext);
     return (LatexDirective);
 }
 
@@ -172,7 +168,6 @@ COMMENT \%[^\n]*
 }
 
 {STRING} {
-    printf ("String: %s\n", yytext);
     yylval.string = strdup (yytext);
     return (String);
 }
