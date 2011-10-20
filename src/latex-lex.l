@@ -8,6 +8,7 @@ STRING {STRINGLIMIT}{STRINGENDING}?
 NEWLINE \\\\
 NEWCELL "&"
 FORMAT [clr|]
+COMMENT \%[^\n]*
 
 %option nounput
 
@@ -21,6 +22,10 @@ FORMAT [clr|]
 %%
 {BLANK}*\n{BLANK}* {
     ++nb_line;
+}
+
+{COMMENT} {
+    /* Ignore it */
 }
 
 {BLANK}*{NEWLINE}{BLANK}*|{BLANK}*\\newline{BLANK}* {
@@ -57,14 +62,16 @@ FORMAT [clr|]
 }
 
 {BLANK}*\\caption{BLANK}* {
-    return (CaptionTok);
+    return (Caption);
 }
 
 {BLANK}*\{{BLANK}* {
+    printf ("Open\n");
     return (Open);
 }
 
 {BLANK}*\} {
+    printf ("Close\n");
     return (Close);
 }
 
@@ -74,6 +81,15 @@ FORMAT [clr|]
 
 {BLANK}*\\cline{BLANK}* {
     return (CLine);
+}
+
+{BLANK}*\\vspace{BLANK}* {
+    printf ("VSpace\n");
+    return (VSpace);
+}
+
+{BLANK}*\\label{BLANK}* {
+    return (Label);
 }
 
 \\alpha {
@@ -141,6 +157,7 @@ FORMAT [clr|]
 }
 
 \\{CHAR}+ {
+    printf ("Directive: %s\n", yytext);
     return (LatexDirective);
 }
 
@@ -155,6 +172,7 @@ FORMAT [clr|]
 }
 
 {STRING} {
+    printf ("String: %s\n", yytext);
     yylval.string = strdup (yytext);
     return (String);
 }

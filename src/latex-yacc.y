@@ -14,11 +14,12 @@
     char  character;
     char *string;
     void *dummy;
+    const char *cstring;
 }
 
 %token <string> String NumberTok IntegerTok Format Blank
 %token Begin End Open Close Tabular TableTok
-%token NewLine NewCell HLine CLine MultiColumnTok CaptionTok LatexDirective
+%token NewLine NewCell HLine CLine MultiColumnTok Caption LatexDirective VSpace Label
 %token Alpha ALPHA Beta BETA Gamma GAMMA Delta DELTA Percent
 %token Bold Italic SmallCaps Roman Serif Emphasis
 
@@ -28,13 +29,14 @@
 %type <integer> MultiColumn Integer
 %type <number> Number
 %type <character> SimpleFormat
-%type <string> Text Caption
-%type <dummy> Garbage BeginTabular EndTabular BeginTable EndTable Horizontal
-%type <dummy> BeginDummyRule EndDummyRule DummyText
+%type <string> Text Extra
+%type <cstring> TextModifier
+%type <dummy> Garbage BeginTabular EndTabular BeginTable EndTable
+%type <dummy> BeginDummyRule EndDummyRule DummyText DummyLine
 
 %start OUT
 
-%expect 135 /* In Garbage and mostly in Text */
+/*%expect 151 /* In Garbage and mostly in Text */
 
 %%
 /* This ignores the garbage before and after the table and generates the html */
@@ -44,14 +46,14 @@ OUT :         Table         { htmlize ($1); }
     | Garbage Table Garbage { htmlize ($2); }
     ;
 
-/* A table can either be a tabular, or a tabular in a table or a tabular in something like a center block, and there can be a caption in it */
-Table :            BeginTabular Format Close Lines EndTabular                  { $$ = new_table ($2, $4, NULL); }
-      | BeginTable BeginTabular Format Close Lines EndTabular EndTable         { $$ = new_table ($3, $5, NULL); }
-      | BeginTable BeginTabular Format Close Lines EndTabular Caption EndTable { $$ = new_table ($3, $5, $7);   }
-      | BeginTable Caption BeginTabular Format Close Lines EndTabular EndTable { $$ = new_table ($4, $6, $2);   }
+/* A table can either be a tabular, or a tabular in a table or a tabular in something like a center block, and there can be extra data like a caption in it */
+Table :            BeginTabular Format Close Lines EndTabular                { $$ = new_table ($2, $4, NULL); }
+      | BeginTable BeginTabular Format Close Lines EndTabular EndTable       { $$ = new_table ($3, $5, NULL); }
+      | BeginTable BeginTabular Format Close Lines EndTabular Extra EndTable { $$ = new_table ($3, $5, $7);   }
+      | BeginTable Extra BeginTabular Format Close Lines EndTabular EndTable { $$ = new_table ($4, $6, $2);   }
       | BeginTable BeginDummyRule BeginTabular Format Close Lines EndTabular EndDummyRule EndTable         { $$ = new_table ($4, $6, NULL); }
-      | BeginTable BeginDummyRule BeginTabular Format Close Lines EndTabular EndDummyRule Caption EndTable { $$ = new_table ($4, $6, $9);   }
-      | BeginTable Caption BeginDummyRule BeginTabular Format Close Lines EndTabular EndDummyRule EndTable { $$ = new_table ($5, $7, $2);   }
+      | BeginTable BeginDummyRule BeginTabular Format Close Lines EndTabular EndDummyRule Extra EndTable { $$ = new_table ($4, $6, $9);   }
+      | BeginTable Extra BeginDummyRule BeginTabular Format Close Lines EndTabular EndDummyRule EndTable { $$ = new_table ($5, $7, $2);   }
       ;
 
 /* A table opening can be followed by stuff like [c], just ignore it */
@@ -73,9 +75,16 @@ EndTabular : End Open Tabular Close         { $$ = NULL; }
 EndDummyRule : End Open DummyText Close { $$ = NULL; }
              ;
 
-Caption : CaptionTok Open Text Close         { $$ = $3; }
-        | CaptionTok Open Text Close NewLine { $$ = $3; }
-        ;
+/* Extra return the value of the caption or NULL to ignore other stuff */
+Extra : Caption Open Text Close         { $$ = $3; }
+      | Caption Open Text Close NewLine { $$ = $3; }
+      | VSpace Open DummyText Close     { $$ = NULL; }
+      | Label  Open DummyText Close     { $$ = NULL; }
+      | Extra Caption Open Text Close         { $$ = $4; }
+      | Extra Caption Open Text Close NewLine { $$ = $4; }
+      | Extra VSpace Open DummyText Close     { $$ = $1; }
+      | Extra Label  Open DummyText Close     { $$ = $1; }
+      ;
 
 EndTable : End Open TableTok Close         { $$ = NULL; }
          | End Open TableTok Close NewLine { $$ = NULL; }
@@ -90,17 +99,16 @@ DummyText : Text {
 Lines : Line               { $$ = new_line ($1, NULL); }
       | Line NewLine       { $$ = new_line ($1, NULL); }
       | Line NewLine Lines { $$ = new_line ($1, $3);   }
-      | Horizontal               { $$ = NULL; }
-      | Horizontal Lines         { $$ = $2;   }
-      | Horizontal NewLine       { $$ = NULL; }
-      | Horizontal NewLine Lines { $$ = $3;   }
+      | DummyLine               { $$ = NULL; }
+      | DummyLine Lines         { $$ = $2;   }
+      | DummyLine NewLine       { $$ = NULL; }
+      | DummyLine NewLine Lines { $$ = $3;   }
       ;
 
-/* An horizontal line can either be a \hline or a \cline */
-Horizontal : HLine            { $$ = NULL; }
-           | HLine Open Close { $$ = NULL; }
-           | CLine Open DummyText Close  { $$ = NULL; }
-           ;
+DummyLine : HLine                       { $$ = NULL; }
+          | HLine  Open Close           { $$ = NULL; }
+          | CLine  Open DummyText Close { $$ = NULL; }
+          ;
 
 /* A line can be one or many cells (which can be empty) separated by newcell (&) */
 /* Simple cells are either text, or integers, or numbers */
@@ -153,14 +161,11 @@ Text : String   { $$ = $1; }
      | GAMMA Open Close { $$ = strdup ("&Gamma;"); }
      | Delta Open Close { $$ = strdup ("&delta;"); }
      | DELTA Open Close { $$ = strdup ("&Delta;"); }
-     | Emphasis  Open Text Close { $$ = surround_with ($3, "em"); }
-     | Bold      Open Text Close { $$ = surround_with ($3, "b");  }
-     | Italic    Open Text Close { $$ = surround_with ($3, "i");  }
+     | TextModifier   Text Close { $$ = surround_with ($2, $1); }
      | SmallCaps Open Text Close { $$ = make_caps ($3); }
-     | Roman     Open Text Close { $$ = $3; }
-     | Serif     Open Text Close { $$ = $3; }
+     /*| Open SmallCaps Text Close { $$ = make_caps ($3); }
      /* The following rules causes each one 2 shift/reduce warnings (some are common with others). Considering all others, it's worth 18 warnings */
-     | Text String   { $$ = append ($1, $2); }
+     | Text String   { $$ = append (append_const ($1, " "), $2); }
      | Text Blank    { $$ = append ($1, $2); }
      | Text Format   { $$ = append ($1, $2); }
      | Text Percent  { $$ = append_const ($1, "&#37;");   }
@@ -180,12 +185,9 @@ Text : String   { $$ = $1; }
      | Text GAMMA Open Close { $$ = append_const ($1, "&Gamma;"); }
      | Text Delta Open Close { $$ = append_const ($1, "&delta;"); }
      | Text DELTA Open Close { $$ = append_const ($1, "&Delta;"); }
-     | Text Emphasis  Open Text Close { $$ = append ($1, surround_with ($4, "em")); }
-     | Text Bold      Open Text Close { $$ = append ($1, surround_with ($4, "b"));  }
-     | Text Italic    Open Text Close { $$ = append ($1, surround_with ($4, "i"));  }
+     | Text TextModifier   Text Close { $$ = append ($1, surround_with ($3, $2)); }
      | Text SmallCaps Open Text Close { $$ = append ($1, make_caps ($4)); }
-     | Text Roman     Open Text Close { $$ = append ($1, $4); }
-     | Text Serif     Open Text Close { $$ = append ($1, $4); } 
+     /*| Text Open SmallCaps Text Close { $$ = append ($1, make_caps ($4)); }
      /* There can be a number in the middle of a Text. The first rule causes 3 shift/reduce warnings and the second 35 (37 for both) */
      | Text NumberTok { $$ = append ($1, $2); }
      | NumberTok Text { $$ = append ($1, $2); }
@@ -195,52 +197,68 @@ Text : String   { $$ = $1; }
      /* The 4 preceding rules are woth 70 shift/reduce warnings */
      ;
 
+TextModifier : Emphasis Open { $$ = "em"; }
+             | Bold     Open { $$ = "b";  }
+             | Italic   Open { $$ = "i";  }
+             | Roman    Open { $$ = NULL; }
+             | Serif    Open { $$ = NULL; }
+             /*| Open Emphasis { $$ = "em"; }
+             | Open Bold     { $$ = "b";  }
+             | Open Italic   { $$ = "i";  }
+             | Open Roman    { $$ = NULL; }
+             | Open Serif    { $$ = NULL; }*/
+             ;
+
 /* This rule is made to consume everyting before and after the table. It can consume everyting but table opening/ending */
-Garbage : DummyText  { $$ = NULL; }
-        | Number     { $$ = NULL; }
-        | Integer    { $$ = NULL; }
-        | NewLine    { $$ = NULL; }
-        | NewCell    { $$ = NULL; }
-        | Begin      { $$ = NULL; }
-        | End        { $$ = NULL; }
-        | Open       { $$ = NULL; }
-        | Close      { $$ = NULL; }
-        | CaptionTok { $$ = NULL; }
-        | TableTok   { $$ = NULL; }
-        | Tabular    { $$ = NULL; }
-        | HLine      { $$ = NULL; }
-        | CLine      { $$ = NULL; }
-        | Emphasis   { $$ = NULL; }
-        | Bold       { $$ = NULL; }
-        | Italic     { $$ = NULL; }
-        | SmallCaps  { $$ = NULL; }
-        | Roman      { $$ = NULL; }
-        | Serif      { $$ = NULL; }
-        | MultiColumn        { $$ = NULL; }
-        | LatexDirective     { $$ = NULL; }
+Garbage : DummyText { $$ = NULL; }
+        | Number    { $$ = NULL; }
+        | Integer   { $$ = NULL; }
+        | NewLine   { $$ = NULL; }
+        | NewCell   { $$ = NULL; }
+        | Begin     { $$ = NULL; }
+        | End       { $$ = NULL; }
+        | Open      { $$ = NULL; }
+        | Close     { $$ = NULL; }
+        | Caption   { $$ = NULL; }
+        | TableTok  { $$ = NULL; }
+        | Tabular   { $$ = NULL; }
+        | Emphasis  { $$ = NULL; }
+        | Bold      { $$ = NULL; }
+        | Italic    { $$ = NULL; }
+        | SmallCaps { $$ = NULL; }
+        | Roman     { $$ = NULL; }
+        | Serif     { $$ = NULL; }
+        | HLine     { $$ = NULL; }
+        | CLine     { $$ = NULL; }
+        | VSpace    { $$ = NULL; }
+        | Label     { $$ = NULL; }
+        | MultiColumn       { $$ = NULL; }
+        | LatexDirective    { $$ = NULL; }
         /* The two following rules cause 1 shift/reduce warning each... */
-        | BeginDummyRule     { $$ = NULL; }
-        | EndDummyRule       { $$ = NULL; }
-        | Garbage DummyText  { $$ = NULL; }
-        | Garbage Number     { $$ = NULL; }
-        | Garbage Integer    { $$ = NULL; }
-        | Garbage NewLine    { $$ = NULL; }
-        | Garbage NewCell    { $$ = NULL; }
-        | Garbage Begin      { $$ = NULL; }
-        | Garbage End        { $$ = NULL; }
+        | BeginDummyRule    { $$ = NULL; }
+        | EndDummyRule      { $$ = NULL; }
+        | Garbage DummyText { $$ = NULL; }
+        | Garbage Number    { $$ = NULL; }
+        | Garbage Integer   { $$ = NULL; }
+        | Garbage NewLine   { $$ = NULL; }
+        | Garbage NewCell   { $$ = NULL; }
+        | Garbage Begin     { $$ = NULL; }
+        | Garbage End       { $$ = NULL; }
         /* The following rules causes 34 shift/reduce warnings... */
-        | Garbage Open       { $$ = NULL; }
-        | Garbage Close      { $$ = NULL; }
-        | Garbage CaptionTok { $$ = NULL; }
-        | Garbage TableTok   { $$ = NULL; }
-        | Garbage Tabular    { $$ = NULL; }
-        | Garbage HLine      { $$ = NULL; }
-        | Garbage CLine      { $$ = NULL; }
-        | Garbage Bold       { $$ = NULL; }
-        | Garbage Italic     { $$ = NULL; }
-        | Garbage SmallCaps  { $$ = NULL; }
-        | Garbage Roman      { $$ = NULL; }
-        | Garbage Serif      { $$ = NULL; }
+        | Garbage Open      { $$ = NULL; }
+        | Garbage Close     { $$ = NULL; }
+        | Garbage Caption   { $$ = NULL; }
+        | Garbage TableTok  { $$ = NULL; }
+        | Garbage Tabular   { $$ = NULL; }
+        | Garbage Bold      { $$ = NULL; }
+        | Garbage Italic    { $$ = NULL; }
+        | Garbage SmallCaps { $$ = NULL; }
+        | Garbage Roman     { $$ = NULL; }
+        | Garbage Serif     { $$ = NULL; }
+        | Garbage HLine     { $$ = NULL; }
+        | Garbage CLine     { $$ = NULL; }
+        | Garbage VSpace    { $$ = NULL; }
+        | Garbage Label     { $$ = NULL; }
         | Garbage MultiColumn    { $$ = NULL; }
         | Garbage LatexDirective { $$ = NULL; }
         /* The two following rules cause 1 shift/reduce warning each... */

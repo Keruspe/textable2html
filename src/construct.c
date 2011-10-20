@@ -95,6 +95,8 @@ make_caps (char *string)
 char *
 surround_with (char *string, const char *tag)
 {
+    if (tag == NULL)
+        return string;
     char *result = (char *) malloc ((strlen (string) + 2 * strlen (tag) + 6) * sizeof (char));
     sprintf (result, "<%s>%s</%s>", tag, string, tag);
     free (string);
