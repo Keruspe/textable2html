@@ -10,6 +10,7 @@ NEWCELL "&"
 FORMAT [clr|]
 COMMENT \%[^\n]*
 
+%option noinput
 %option nounput
 
 %{
