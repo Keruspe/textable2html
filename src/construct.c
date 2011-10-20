@@ -130,17 +130,10 @@ free_cells (Cell *cell)
 {
     while (cell)
     {
-        Cell *next = cell->next;
-        switch (cell->kind)
-        {
-        case STRING:
-            /* Only free content for strings */
+        if (cell->kind == STRING) /* Only free content for strings */
             free (cell->content.string);
-        default:
-            /* Always free the cell itself */
-            free (cell);
-            break;
-        }
+        Cell *next = cell->next;
+        free (cell);
         cell = next;
     }
 }
