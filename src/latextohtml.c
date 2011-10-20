@@ -209,7 +209,10 @@ print_lines (FILE *out, Line *lines, unsigned int nb_cols)
     for (; lines; lines = lines->next)
         print_line (out, lines->cells, nb_cols, default_number_format, totals);
     if (no_string)
+    {
         print_line (out, totals, nb_cols, default_number_format, NULL);
+        free_cells (totals);
+    }
 }
 
 static void

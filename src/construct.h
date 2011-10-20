@@ -49,6 +49,9 @@ char *append_const (char       *string,
                     const char *other);
 
 /* Free memory */
+void free_cells (Cell *cell);
+
+/* Free memory */
 void free_table (Table *table);
 
 #endif /*__CONSTRUCT_H__*/

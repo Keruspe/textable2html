@@ -126,31 +126,36 @@ append_const (char *string, const char *other)
 }
 
 void
+free_cells (Cell *cell)
+{
+    while (cell)
+    {
+        Cell *next = cell->next;
+        switch (cell->kind)
+        {
+        case STRING:
+            /* Only free content for strings */
+            free (cell->content.string);
+        default:
+            /* Always free the cell itself */
+            free (cell);
+            break;
+        }
+        cell = next;
+    }
+}
+
+void
 free_table (Table *table)
 {
     free (table->format);
     Line *line = table->lines;
     while (line)
     {
-        Cell *cell = line->cells;
-        while (cell)
-        {
-            Cell *next_cell = cell->next;
-            switch (cell->kind)
-            {
-            case STRING:
-                /* Only free content for strings */
-                free (cell->content.string);
-            default:
-                /* Always free the cell itself */
-                free (cell);
-                break;
-            }
-            cell = next_cell;
-        }
-        Line *next_line = line->next;
+        free_cells (line->cells);
+        Line *next = line->next;
         free (line);
-        line = next_line;
+        line = next;
     }
     free (table->caption);
     free (table);
