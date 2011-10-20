@@ -23,20 +23,20 @@
 %token Alpha ALPHA Beta BETA Gamma GAMMA Delta DELTA Percent
 %token Bold Italic SmallCaps Roman Serif Emphasis
 
-%type <lines> Lines
-%type <cells> Line
-%type <table> Table
-%type <integer> MultiColumn Integer
-%type <number> Number
-%type <character> SimpleFormat
-%type <string> Text Extra
 %type <cstring> TextModifier
-%type <dummy> Garbage BeginTabular EndTabular BeginTable EndTable
+%type <string> Text Extra Greek
+%type <character> SimpleFormat
+%type <number> Number
+%type <integer> MultiColumn Integer
+%type <cells> Line
+%type <lines> Lines
 %type <dummy> BeginDummyRule EndDummyRule DummyText DummyLine
+%type <dummy> Garbage BeginTabular EndTabular BeginTable EndTable
+%type <table> Table
 
 %start OUT
 
-/*%expect 151 /* In Garbage and mostly in Text */
+/*%expect 51 /* In Garbage and mostly in Text */
 
 %%
 /* This ignores the garbage before and after the table and generates the html */
@@ -142,60 +142,37 @@ MultiColumn : MultiColumnTok Open Integer Close Open { $$ = $3; }
 /* A text can be a string, a greek letter, a string with modifier and can contain numbers/integers */
 Text : String   { $$ = $1; }
      | Blank    { $$ = $1; }
-     /* The following rule causes 2 shift/reduce warnings */
      | Format   { $$ = $1; }
+     | Greek    { $$ = $1; }
      | Percent  { $$ = strdup ("&#37;"); }
-     | Alpha    { $$ = strdup ("&alpha;"); }
-     | ALPHA    { $$ = strdup ("&Alpha;"); }
-     | Beta     { $$ = strdup ("&beta;");  }
-     | BETA     { $$ = strdup ("&Beta;");  }
-     | Gamma    { $$ = strdup ("&gamma;"); }
-     | GAMMA    { $$ = strdup ("&Gamma;"); }
-     | Delta    { $$ = strdup ("&delta;"); }
-     | DELTA    { $$ = strdup ("&Delta;"); }
-     | Alpha Open Close { $$ = strdup ("&alpha;"); }
-     | ALPHA Open Close { $$ = strdup ("&Alpha;"); }
-     | Beta  Open Close { $$ = strdup ("&beta;");  }
-     | BETA  Open Close { $$ = strdup ("&Beta;");  }
-     | Gamma Open Close { $$ = strdup ("&gamma;"); }
-     | GAMMA Open Close { $$ = strdup ("&Gamma;"); }
-     | Delta Open Close { $$ = strdup ("&delta;"); }
-     | DELTA Open Close { $$ = strdup ("&Delta;"); }
      | TextModifier   Text Close { $$ = surround_with ($2, $1); }
      | SmallCaps Open Text Close { $$ = make_caps ($3); }
-     /*| Open SmallCaps Text Close { $$ = make_caps ($3); }
-     /* The following rules causes each one 2 shift/reduce warnings (some are common with others). Considering all others, it's worth 18 warnings */
-     | Text String   { $$ = append (append_const ($1, " "), $2); }
-     | Text Blank    { $$ = append ($1, $2); }
-     | Text Format   { $$ = append ($1, $2); }
-     | Text Percent  { $$ = append_const ($1, "&#37;");   }
-     | Text Alpha    { $$ = append_const ($1, "&alpha;"); }
-     | Text ALPHA    { $$ = append_const ($1, "&Alpha;"); }
-     | Text Beta     { $$ = append_const ($1, "&beta;");  }
-     | Text BETA     { $$ = append_const ($1, "&Beta;");  }
-     | Text Gamma    { $$ = append_const ($1, "&gamma;"); }
-     | Text GAMMA    { $$ = append_const ($1, "&Gamma;"); }
-     | Text Delta    { $$ = append_const ($1, "&delta;"); }
-     | Text DELTA    { $$ = append_const ($1, "&Delta;"); }
-     | Text Alpha Open Close { $$ = append_const ($1, "&alpha;"); }
-     | Text ALPHA Open Close { $$ = append_const ($1, "&Alpha;"); }
-     | Text Beta  Open Close { $$ = append_const ($1, "&beta;");  }
-     | Text BETA  Open Close { $$ = append_const ($1, "&Beta;");  }
-     | Text Gamma Open Close { $$ = append_const ($1, "&gamma;"); }
-     | Text GAMMA Open Close { $$ = append_const ($1, "&Gamma;"); }
-     | Text Delta Open Close { $$ = append_const ($1, "&delta;"); }
-     | Text DELTA Open Close { $$ = append_const ($1, "&Delta;"); }
+     /*| Open SmallCaps Text Close { $$ = make_caps ($3); }*/
+     | Text String  { $$ = append (append_const ($1, " "), $2); }
+     | Text Blank   { $$ = append ($1, $2); }
+     | Text Format  { $$ = append ($1, $2); }
+     | Text Greek   { $$ = append ($1, $2); }
+     | Text Percent { $$ = append_const ($1, "&#37;"); }
      | Text TextModifier   Text Close { $$ = append ($1, surround_with ($3, $2)); }
      | Text SmallCaps Open Text Close { $$ = append ($1, make_caps ($4)); }
-     /*| Text Open SmallCaps Text Close { $$ = append ($1, make_caps ($4)); }
-     /* There can be a number in the middle of a Text. The first rule causes 3 shift/reduce warnings and the second 35 (37 for both) */
-     | Text NumberTok { $$ = append ($1, $2); }
-     | NumberTok Text { $$ = append ($1, $2); }
-     /* There can be an integer in the middle of a Text. The first rule causes 3 shift/reduce warnings and the second 35 (37 for both) */
+     /*| Text Open SmallCaps Text Close { $$ = append ($1, make_caps ($4)); }*/
+     | Text NumberTok  { $$ = append ($1, $2); }
+     | NumberTok Text  { $$ = append ($1, $2); }
      | Text IntegerTok { $$ = append ($1, $2); }
      | IntegerTok Text { $$ = append ($1, $2); }
-     /* The 4 preceding rules are woth 70 shift/reduce warnings */
      ;
+
+/* Separated for readability */
+Greek : Alpha { $$ = strdup ("&alpha;"); }
+      | ALPHA { $$ = strdup ("&Alpha;"); }
+      | Beta  { $$ = strdup ("&beta;");  }
+      | BETA  { $$ = strdup ("&Beta;");  }
+      | Gamma { $$ = strdup ("&gamma;"); }
+      | GAMMA { $$ = strdup ("&Gamma;"); }
+      | Delta { $$ = strdup ("&delta;"); }
+      | DELTA { $$ = strdup ("&Delta;"); }
+      | Greek Open Close { $$ = $1; }
+      ;
 
 TextModifier : Emphasis Open { $$ = "em"; }
              | Bold     Open { $$ = "b";  }
@@ -210,8 +187,7 @@ TextModifier : Emphasis Open { $$ = "em"; }
              ;
 
 /* This rule is made to consume everyting before and after the table. It can consume everyting but table opening/ending */
-Garbage : DummyText { $$ = NULL; }
-        | Number    { $$ = NULL; }
+Garbage : Number    { $$ = NULL; }
         | Integer   { $$ = NULL; }
         | NewLine   { $$ = NULL; }
         | NewCell   { $$ = NULL; }
@@ -232,24 +208,27 @@ Garbage : DummyText { $$ = NULL; }
         | CLine     { $$ = NULL; }
         | VSpace    { $$ = NULL; }
         | Label     { $$ = NULL; }
-        | MultiColumn       { $$ = NULL; }
+        | String    { $$ = NULL; }
+        | Format    { $$ = NULL; }
+        | Blank     { $$ = NULL; }
+        | Percent   { $$ = NULL; }
+        | Greek     { $$ = NULL; }
+        | MultiColumnTok    { $$ = NULL; }
         | LatexDirective    { $$ = NULL; }
-        /* The two following rules cause 1 shift/reduce warning each... */
         | BeginDummyRule    { $$ = NULL; }
         | EndDummyRule      { $$ = NULL; }
-        | Garbage DummyText { $$ = NULL; }
         | Garbage Number    { $$ = NULL; }
         | Garbage Integer   { $$ = NULL; }
         | Garbage NewLine   { $$ = NULL; }
         | Garbage NewCell   { $$ = NULL; }
         | Garbage Begin     { $$ = NULL; }
         | Garbage End       { $$ = NULL; }
-        /* The following rules causes 34 shift/reduce warnings... */
         | Garbage Open      { $$ = NULL; }
         | Garbage Close     { $$ = NULL; }
         | Garbage Caption   { $$ = NULL; }
         | Garbage TableTok  { $$ = NULL; }
         | Garbage Tabular   { $$ = NULL; }
+        | Garbage Emphasis  { $$ = NULL; }
         | Garbage Bold      { $$ = NULL; }
         | Garbage Italic    { $$ = NULL; }
         | Garbage SmallCaps { $$ = NULL; }
@@ -259,9 +238,13 @@ Garbage : DummyText { $$ = NULL; }
         | Garbage CLine     { $$ = NULL; }
         | Garbage VSpace    { $$ = NULL; }
         | Garbage Label     { $$ = NULL; }
-        | Garbage MultiColumn    { $$ = NULL; }
+        | Garbage String    { $$ = NULL; }
+        | Garbage Format    { $$ = NULL; }
+        | Garbage Blank     { $$ = NULL; }
+        | Garbage Percent   { $$ = NULL; }
+        | Garbage Greek     { $$ = NULL; }
+        | Garbage MultiColumnTok { $$ = NULL; }
         | Garbage LatexDirective { $$ = NULL; }
-        /* The two following rules cause 1 shift/reduce warning each... */
         | Garbage BeginDummyRule { $$ = NULL; }
         | Garbage EndDummyRule   { $$ = NULL; }
         ;
