@@ -2,6 +2,7 @@ generated_sources = src/latex-lex.c src/latex-yacc.c
 sources = $(generated_sources) src/construct.c src/latextohtml.c
 objects = $(sources:.c=.o)
 bin     = latextohtml
+tex_samples = $(shell ls sample/*.tex)
 
 LEX  = flex
 YACC = bison -y
@@ -23,14 +24,12 @@ src/latex-yacc.o: src/latex-yacc.y
 src/latex-lex.o: src/latex-lex.l src/latex-yacc.c y.tab.h
 
 clean:
-	$(RM) $(generated_sources) $(objects) $(bin) y.tab.h sample/*.html
+	$(RM) $(generated_sources) $(objects) $(bin) y.tab.h $(tex_samples:.tex=.html)
 
-samples: sample/test.html sample/full_numbers.html sample/example.html
+samples: $(tex_samples) $(bin)
+	for i in $(filter-out $(bin), $^); do ./$(bin) $$i || break; done
 
-sample/%.html: sample/%.tex $(bin)
-	./$(bin) $<
-
-valgrind-check: sample/test.tex sample/full_numbers.tex sample/example.tex $(bin)
+valgrind-check: $(tex_samples) $(bin)
 	for i in $(filter-out $(bin), $^); do valgrind --leak-check=full --show-reachable=yes ./$(bin) $$i || break; done
 
 .PHONY: all clean samples valgrind-check
