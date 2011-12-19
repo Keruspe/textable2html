@@ -46,7 +46,11 @@ OUT :         Table         { htmlize ($1); }
     | Garbage Table Garbage { htmlize ($2); }
     ;
 
-/* A table can either be a tabular, or a tabular in a table or a tabular in something like a center block, and there can be extra data like a caption in it */
+/*
+ * A table can either be a tabular, or a tabular in a table,
+ * or a tabular in something like a center block (the Dummy Rule here),
+ * and there can be extra data like a caption in it (the Extra rule)
+ */
 Table :            BeginTabular Format Close Lines EndTabular                { $$ = new_table ($2, $4, NULL); }
       | BeginTable BeginTabular Format Close Lines EndTabular EndTable       { $$ = new_table ($3, $5, NULL); }
       | BeginTable BeginTabular Format Close Lines EndTabular Extra EndTable { $$ = new_table ($3, $5, $7);   }
@@ -110,9 +114,11 @@ DummyLine : HLine                       { $$ = NULL; }
           | CLine  Open DummyText Close { $$ = NULL; }
           ;
 
-/* A line can be one or many cells (which can be empty) separated by newcell (&) */
-/* Simple cells are either text, or integers, or numbers */
-/* A multicolumn has a simpleformat (unichar format) and a content as for a simple one */
+/* 
+ * A line can be one or many cells (which can be empty) separated by newcell (&)
+ * Simple cells are either text, or integers, or numbers
+ * A multicolumn has a simpleformat (unichar format) and a content as for a simple one
+ */
 Line : Text                 { $$ = new_string_cell  ($1, 1, '\0', NULL); }
      | Text    NewCell Line { $$ = new_string_cell  ($1, 1, '\0', $3);   }
      | Number               { $$ = new_number_cell  ($1, 1, '\0', NULL); }

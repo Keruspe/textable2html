@@ -2,8 +2,11 @@ BLANK [ \t]
 DIGIT [0-9]
 NUMBER {DIGIT}+"."?{DIGIT}*
 CHAR [a-zA-Z0-9_-]
+/* Characters auhorizes at the first or last position in a string */
 STRINGLIMIT [^\ \\{}&\n$]+
+/* Everything but the first character. Ends with a string limit, allow spaces inside. */
 STRINGENDING [^\\{}&\n$]*{STRINGLIMIT}
+/* One character alone or with a string ending */
 STRING {STRINGLIMIT}{STRINGENDING}?
 NEWLINE \\\\
 NEWCELL "&"
